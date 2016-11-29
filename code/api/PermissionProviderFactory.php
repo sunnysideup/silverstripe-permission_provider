@@ -3,7 +3,6 @@
 
 class PermissionProviderFactory extends Object
 {
-
     public function CreateDefaultMember($email, $firstName = '', $surname = '', $password = '')
     {
         $filter = array('Email' => $email);
@@ -21,7 +20,7 @@ class PermissionProviderFactory extends Object
         $member->FirstName = $firstName;
         $member->Surname = $surname;
         $member->write();
-        if($password) {
+        if ($password) {
             $member->changePassword($password);
         }
         return $member;
@@ -41,10 +40,10 @@ class PermissionProviderFactory extends Object
      */
     public function CreateGroup($code, $name, $parentGroup = null, $permissionCode = '', $roleTitle = '', $permissionArray = array(), $member = null)
     {
-        if( ! $permissionArray) {
+        if (! $permissionArray) {
             $permissionArray = array();
         }
-        if( ! is_array($permissionArray)) {
+        if (! is_array($permissionArray)) {
             user_error('Permission Array expects null or an array... currently: '.print_r($permissionArray, 1));
         }
         //changing to lower case seems to be very important
