@@ -78,7 +78,10 @@ class PermissionProviderFactory extends Object
             DB::alteration_message('adding parent group');
             if (is_string($parentGroup)) {
                 $parentGroupName = $parentGroup;
-                $parentGroup = Group::get()->filter(array('Title' => $parentGroupName))->first();
+                $parentGroup = DataObject::get_one(
+                    'Group',
+                    array('Title' => $parentGroupName)
+                );
                 if (!$parentGroup) {
                     $parentGroup = Group::create();
                     $parentGroupStyle = 'created';
@@ -123,9 +126,10 @@ class PermissionProviderFactory extends Object
         $permissionArray[] = $permissionCode;
         unset($permissionCode);
         if ($roleTitle) {
-            $permissionRole = PermissionRole::get()
-                ->Filter(array('Title' => $roleTitle))
-                ->First();
+            $permissionRole = DataObject::get_one(
+                'PermissionRole',
+                array('Title' => $roleTitle)
+            );
             $permissionRoleCount = PermissionRole::get()
                 ->Filter(array('Title' => $roleTitle))
                 ->Count();
@@ -153,9 +157,10 @@ class PermissionProviderFactory extends Object
                 if (is_array($permissionArray) && count($permissionArray)) {
                     DB::alteration_message('working with '.implode(', ', $permissionArray));
                     foreach ($permissionArray as $permissionRoleCode) {
-                        $permissionRoleCodeObject = PermissionRoleCode::get()
-                            ->Filter(array('Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID))
-                            ->First();
+                        $permissionRoleCodeObject = DataObject::get_one(
+                            'PermissionRoleCode',
+                            array('Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID)
+                        );
                         $permissionRoleCodeObjectCount = PermissionRoleCode::get()
                             ->Filter(array('Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID))
                             ->Count();
