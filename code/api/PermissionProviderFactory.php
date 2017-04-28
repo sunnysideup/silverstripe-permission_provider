@@ -6,7 +6,10 @@ class PermissionProviderFactory extends Object
     public function CreateDefaultMember($email, $firstName = '', $surname = '', $password = '')
     {
         $filter = array('Email' => $email);
-        $member = Member::get()->filter($filter)->first();
+        $member = DataObject::get_one(
+            'Member',
+            $filter
+        );
         if (!$member) {
             $member = Member::create($filter);
         }
