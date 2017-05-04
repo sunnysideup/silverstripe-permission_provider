@@ -8,7 +8,8 @@ class PermissionProviderFactory extends Object
         $filter = array('Email' => $email);
         $member = DataObject::get_one(
             'Member',
-            $filter
+            $filter,
+            $cacheDataObjectGetOne = false
         );
         if (!$member) {
             $member = Member::create($filter);
@@ -80,7 +81,8 @@ class PermissionProviderFactory extends Object
                 $parentGroupName = $parentGroup;
                 $parentGroup = DataObject::get_one(
                     'Group',
-                    array('Title' => $parentGroupName)
+                    array('Title' => $parentGroupName),
+                    $cacheDataObjectGetOne = false
                 );
                 if (!$parentGroup) {
                     $parentGroup = Group::create();
@@ -126,10 +128,6 @@ class PermissionProviderFactory extends Object
         $permissionArray[] = $permissionCode;
         unset($permissionCode);
         if ($roleTitle) {
-            $permissionRole = DataObject::get_one(
-                'PermissionRole',
-                array('Title' => $roleTitle)
-            );
             $permissionRoleCount = PermissionRole::get()
                 ->Filter(array('Title' => $roleTitle))
                 ->Count();
@@ -143,7 +141,7 @@ class PermissionProviderFactory extends Object
                     $permissionRoleToDelete->delete();
                 }
             }
-            if ($permissionRole) {
+            elseif ($permissionRole == 1) {
                 //do nothing
                 DB::alteration_message("$roleTitle role in place");
             } else {
@@ -153,13 +151,19 @@ class PermissionProviderFactory extends Object
                 $permissionRole->OnlyAdminCanApply = true;
                 $permissionRole->write();
             }
+            $permissionRole = DataObject::get_one(
+                'PermissionRole',
+                array('Title' => $roleTitle),
+                $cacheDataObjectGetOne = false
+            );
             if ($permissionRole) {
                 if (is_array($permissionArray) && count($permissionArray)) {
                     DB::alteration_message('working with '.implode(', ', $permissionArray));
                     foreach ($permissionArray as $permissionRoleCode) {
                         $permissionRoleCodeObject = DataObject::get_one(
                             'PermissionRoleCode',
-                            array('Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID)
+                            array('Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID),
+                            $cacheDataObjectGetOne = false
                         );
                         $permissionRoleCodeObjectCount = PermissionRoleCode::get()
                             ->Filter(array('Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID))
