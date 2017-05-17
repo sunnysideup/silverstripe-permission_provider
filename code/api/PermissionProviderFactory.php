@@ -132,12 +132,17 @@ class PermissionProviderFactory extends Object
                 ->Filter(array('Title' => $roleTitle))
                 ->Count();
             if ($permissionRoleCount > 1) {
-                db::alteration_message("There is more than one Permission Role with title $roleTitle ($permissionCodeObjectCount)", 'deleted');
+                db::alteration_message("There is more than one Permission Role with title $roleTitle ($permissionRoleCount)", 'deleted');
+                $permissionRolesFirst = DataObject::get_one(
+                    'PermissionRole',
+                    array('Title' => $roleTitle),
+                    $cacheDataObjectGetOne = false
+                );
                 $permissionRolesToDelete = PermissionRole::get()
                     ->Filter(array('Title' => $roleTitle))
-                    ->Exclude(array('ID' => $permissionRole->ID));
+                    ->Exclude(array('ID' => $permissionRolesFirst->ID));
                 foreach ($permissionRolesToDelete as $permissionRoleToDelete) {
-                    db::alternation_message("DELETING double permission role $roleTitle", 'deleted');
+                    db::alteration_message("DELETING double permission role $roleTitle", 'deleted');
                     $permissionRoleToDelete->delete();
                 }
             }
@@ -178,7 +183,7 @@ class PermissionProviderFactory extends Object
                             }
                             db::alteration_message('There is more than one Permission Role Code in '.$permissionRole->Title." with Code = $permissionRoleCode ($permissionRoleCodeObjectCount)", 'deleted');
                         }
-                        if ($permissionRoleCodeObject) {
+                        elseif ($permissionRoleCodeObjectCount == 1) {
                             //do nothing
                         } else {
                             $permissionRoleCodeObject = PermissionRoleCode::create();
