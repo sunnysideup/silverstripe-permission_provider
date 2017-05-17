@@ -141,7 +141,7 @@ class PermissionProviderFactory extends Object
                     $permissionRoleToDelete->delete();
                 }
             }
-            elseif ($permissionRole == 1) {
+            elseif ($permissionRoleCount == 1) {
                 //do nothing
                 DB::alteration_message("$roleTitle role in place");
             } else {
