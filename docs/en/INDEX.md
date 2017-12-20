@@ -1,72 +1,18 @@
-# Silverstripe permission provider module
-[![Build Status](https://travis-ci.org/sunnysideup/silverstripe-permission_provider.svg?branch=master)](https://travis-ci.org/sunnysideup/silverstripe-permission_provider)
-[![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-permission_provider/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-permission_provider/?branch=master)
-[![codecov.io](https://codecov.io/github/sunnysideup/silverstripe-permission_provider/coverage.svg?branch=master)](https://codecov.io/github/sunnysideup/silverstripe-permission_provider?branch=master)
-![helpfulrobot](https://helpfulrobot.io/sunnysideup/permission_provider/badge)
+# Example
 
-[![Latest Stable Version](https://poser.pugx.org/sunnysideup/permission_provider/version)](https://packagist.org/packages/sunnysideup/permission_provider)
-[![License](https://poser.pugx.org/sunnysideup/permission_provider/license)](https://packagist.org/packages/sunnysideup/permission_provider)
-[![Monthly Downloads](https://poser.pugx.org/sunnysideup/permission_provider/d/monthly)](https://packagist.org/packages/sunnysideup/permission_provider)
+The following code snippet creates a Tour Manager group
+with a default member
 
-
-## Documentation
-
-
-
- * [Developer Docs](docs/en/INDEX.md)
- * [User Guide](docs/en/userguide.md)
- * [API](http://ssmods.com/apis/permission_provider/docs/en/api/)
-
-## Requirements
-
-
-
-see [composer.json](composer.json) for details
-
-### Suggested Modules
-
-
-
-see [composer.json](composer.json) for details
-
-
-## Installation
-
-
+```php
+    PermissionProviderFactory::inst()
+        ->setEmail('a@b.com')
+        ->setFirstName('Tour')
+        ->setSurname('Manager')
+        ->setPassword('change-on-next-login-123')
+        ->setName('Tour Managers')
+        ->setCode('tour_managers')
+        ->setPermissionCode('CMS_ACCESS_TOUR_ADMIN')
+        ->setRoleTitle('Tour Manager Privileges')
+        ->setPermissionArray(['CMS_ACCESS_TourBookingsAdmin'])
+        ->run();
 ```
-composer require sunnysideup/permission_provider
-```
-
-### Configuration
-
-
-
-In the `_config` folder you will find the `permission_provider.yml.example`
-file that shows options for the configuration of this module.
-
-We recommend that you:
-
-  1. copy these `permission_provider.yml.example` files into your
-`mysite/_config` folder
-  2. remove the .example extension
-  3. delete the lines you not care about, and
-  4. adjust the configurations that you would like to use.
-
-
-## Contributing
-
-
-
-We welcome any contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for more details.
-
-## Paid assistance
-
-
-
-You can pay us to create an improved / adapted version of this module for your own projects.  Please contact us if you like to find out more: [www.sunnysideup.co.nz](http://www.sunnysideup.co.nz)
-
-## Author
-
-
-
-Sunny Side Up Ltd.
