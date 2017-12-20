@@ -3,22 +3,110 @@
 
 class PermissionProviderFactory extends Object
 {
-    public function CreateDefaultMember($email, $firstName = '', $surname = '', $password = '')
+
+    private static $_instance = null;
+
+    public static function inst()
     {
+        if(self::$_instance === null) {
+            self::$_instance = Injector::inst()->get('PermissionProviderFactory');
+        }
+
+        return self::$_instance;
+    }
+
+    protected $email = '';
+    protected $firstName = '';
+    protected $surname = '';
+    protected $code = '';
+    protected $name = '';
+    protected $parentGroup = null;
+    protected $permissionCode = '';
+    protected $roleTitle = '';
+    protected $permissionArray = [];
+    protected $member = null;
+
+    public function setEmail($email){$this->email = $email; return $this;}
+    public function setFirstName($firstName){$this->firstName = $firstName; return $this;}
+    public function setSurname($surname){$this->surname = $surname; return $this;}
+    public function setPassword($password){$this->password = $password; return $this;}
+    public function setCode($code){$this->code = $code; return $this;}
+    public function setName($name){$this->name = $name; return $this;}
+    public function setParentGroup($parentGroup){$this->parentGroup = $parentGroup; return $this;}
+    public function setPermissionCode($permissionCode){$this->permissionCode = $permissionCode; return $this;}
+    public function setRoleTitle($roleTitle){$this->roleTitle = $roleTitle; return $this;}
+    public function setPermissionArray($permissionArray){$this->permissionArray = $permissionArray; return $this;}
+    public function setMember($member){$this->member = $member; return $this;}
+
+    /**
+     *
+     * @return Group and member, using the default settings
+     */
+    function CreateGroupAndMember()
+    {
+        $member = $this->CreateDefaultMember(
+            $this->email,
+            $this->firstName,
+            $this->surname,
+            $this->password
+        );
+        $group = $this->CreateGroup(
+            $this->code,
+            $this->name,
+            $this->parentGroup,
+            $this->permissionCode,
+            $this->roleTitle,
+            $this->permissionArray,
+            $member
+        );
+
+        return $group;
+    }
+
+
+    /**
+     * Create a member
+     * @param       string $email
+     * @param       string $firstName   OPTIONAL
+     * @param       string $surname     OPTIONAL
+     * @param       string $password    OPTIONAL
+     *
+     * @return Member
+     */
+    public function CreateDefaultMember(
+        $email,
+        $firstName = '',
+        $surname = '',
+        $password = ''
+    )
+    {
+        if(! $email) {$email = $this->email;}
+        if(! $firstName) {$firstName = $this->firstName;}
+        if(! $surname) {$surname = $this->surname;}
+        if(! $password) {$password = $this->password;}
+
+        if(! $email) {
+            $baseURL = Director::absoluteBaseURL();
+            $baseURL = str_replace('https://', '', $baseURL);
+            $baseURL = str_replace('http://', '', $baseURL);
+            $baseURL = trim( $baseURL, '/' );
+            $email = 'random.email.'.rand(0,999999).'@'.$baseURL;
+        }
+        if(! $firstName) {
+            $firstName = 'Default';
+        }
+        if(! $surname) {
+            $surname = 'User';
+        }
+
         $filter = array('Email' => $email);
         $member = DataObject::get_one(
             'Member',
             $filter,
             $cacheDataObjectGetOne = false
         );
-        if (!$member) {
+        if (! $member) {
             $member = Member::create($filter);
-        }
-        if (!$firstName) {
-            $firstName = 'Default';
-        }
-        if (!$surname) {
-            $surname = 'User';
         }
 
         $member->FirstName = $firstName;
@@ -26,7 +114,10 @@ class PermissionProviderFactory extends Object
         $member->write();
         if ($password) {
             $member->changePassword($password);
+            $member->PasswordExpiry = date('Y-m-d');
+            $member->write();
         }
+
         return $member;
     }
 
@@ -42,23 +133,34 @@ class PermissionProviderFactory extends Object
      * @param array           $permissionArray Permission Array - list of permission codes applied to the group
      * @param Member | String $member          Default Member added to the group (e.g. sales@mysite.co.nz). You can also provide an email address
      */
-    public function CreateGroup($code, $name, $parentGroup = null, $permissionCode = '', $roleTitle = '', $permissionArray = array(), $member = null)
+    public function CreateGroup(
+        $code = '',
+        $name,
+        $parentGroup = null,
+        $permissionCode = '',
+        $roleTitle = '',
+        array $permissionArray = [],
+        $member = null
+    )
     {
-        if (! $permissionArray) {
-            $permissionArray = array();
+        if(! $name) {$name = $this->name;}
+        if(! $code) {$code = $this->code;}
+        if(! $parentGroup) { $parentGroup = $this->parentGroup;}
+        if(! $permissionCode) { $permissionCode = $this->permissionCode;}
+        if(! $permissionArray || count($permissionArray) === 0) { $permissionArray = $this->permissionArray;}
+        if(! $member) { $member = $this->member;}
+        if(!$name) {
+            $name = 'New Group '.rand(0,999999);
         }
-        if (! is_array($permissionArray)) {
-            user_error('Permission Array expects null or an array... currently: '.print_r($permissionArray, 1));
+        if(!$code) {
+            $code = $name;
         }
+        $code = str_replace(' ', '_', $code);
+        $code = preg_replace("/[\W_]+/u", '', $code);
         //changing to lower case seems to be very important
         //unidentified bug so far
         $code = strtolower($code);
-        if (!$code) {
-            user_error("Can't create a group without a $code ($name)");
-        }
-        if (!$name) {
-            user_error("Can't create a group without a $name ($code)");
-        }
+
         $filterArrayForGroup = array('Code' => $code);
         $groupDataList = Group::get()->filter($filterArrayForGroup);
         $groupCount = $groupDataList->count();
@@ -217,7 +319,9 @@ class PermissionProviderFactory extends Object
                 $member->Groups()->add($group);
             }
         } else {
-            DB::alteration_message('No need to add user');
+            DB::alteration_message('No user provided.');
         }
+
+        return $group;
     }
 }
