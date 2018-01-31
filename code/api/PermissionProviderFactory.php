@@ -3,12 +3,11 @@
 
 class PermissionProviderFactory extends Object
 {
-
     private static $_instance = null;
 
     public static function inst()
     {
-        if(self::$_instance === null) {
+        if (self::$_instance === null) {
             self::$_instance = Injector::inst()->get('PermissionProviderFactory');
         }
 
@@ -26,23 +25,67 @@ class PermissionProviderFactory extends Object
     protected $permissionArray = [];
     protected $member = null;
 
-    public function setEmail($email){$this->email = $email; return $this;}
-    public function setFirstName($firstName){$this->firstName = $firstName; return $this;}
-    public function setSurname($surname){$this->surname = $surname; return $this;}
-    public function setPassword($password){$this->password = $password; return $this;}
-    public function setCode($code){$this->code = $code; return $this;}
-    public function setName($name){$this->name = $name; return $this;}
-    public function setParentGroup($parentGroup){$this->parentGroup = $parentGroup; return $this;}
-    public function setPermissionCode($permissionCode){$this->permissionCode = $permissionCode; return $this;}
-    public function setRoleTitle($roleTitle){$this->roleTitle = $roleTitle; return $this;}
-    public function setPermissionArray($permissionArray){$this->permissionArray = $permissionArray; return $this;}
-    public function setMember($member){$this->member = $member; return $this;}
+    public function setEmail($email)
+    {
+        $this->email = $email;
+        return $this;
+    }
+    public function setFirstName($firstName)
+    {
+        $this->firstName = $firstName;
+        return $this;
+    }
+    public function setSurname($surname)
+    {
+        $this->surname = $surname;
+        return $this;
+    }
+    public function setPassword($password)
+    {
+        $this->password = $password;
+        return $this;
+    }
+    public function setCode($code)
+    {
+        $this->code = $code;
+        return $this;
+    }
+    public function setName($name)
+    {
+        $this->name = $name;
+        return $this;
+    }
+    public function setParentGroup($parentGroup)
+    {
+        $this->parentGroup = $parentGroup;
+        return $this;
+    }
+    public function setPermissionCode($permissionCode)
+    {
+        $this->permissionCode = $permissionCode;
+        return $this;
+    }
+    public function setRoleTitle($roleTitle)
+    {
+        $this->roleTitle = $roleTitle;
+        return $this;
+    }
+    public function setPermissionArray($permissionArray)
+    {
+        $this->permissionArray = $permissionArray;
+        return $this;
+    }
+    public function setMember($member)
+    {
+        $this->member = $member;
+        return $this;
+    }
 
     /**
      *
      * @return Group and member, using the default settings
      */
-    function CreateGroupAndMember()
+    public function CreateGroupAndMember()
     {
         $member = $this->CreateDefaultMember(
             $this->email,
@@ -78,24 +121,31 @@ class PermissionProviderFactory extends Object
         $firstName = '',
         $surname = '',
         $password = ''
-    )
-    {
-        if(! $email) {$email = $this->email;}
-        if(! $firstName) {$firstName = $this->firstName;}
-        if(! $surname) {$surname = $this->surname;}
-        if(! $password) {$password = $this->password;}
+    ) {
+        if (! $email) {
+            $email = $this->email;
+        }
+        if (! $firstName) {
+            $firstName = $this->firstName;
+        }
+        if (! $surname) {
+            $surname = $this->surname;
+        }
+        if (! $password) {
+            $password = $this->password;
+        }
 
-        if(! $email) {
+        if (! $email) {
             $baseURL = Director::absoluteBaseURL();
             $baseURL = str_replace('https://', '', $baseURL);
             $baseURL = str_replace('http://', '', $baseURL);
-            $baseURL = trim( $baseURL, '/' );
-            $email = 'random.email.'.rand(0,999999).'@'.$baseURL;
+            $baseURL = trim($baseURL, '/');
+            $email = 'random.email.'.rand(0, 999999).'@'.$baseURL;
         }
-        if(! $firstName) {
+        if (! $firstName) {
             $firstName = 'Default';
         }
-        if(! $surname) {
+        if (! $surname) {
             $surname = 'User';
         }
 
@@ -141,18 +191,29 @@ class PermissionProviderFactory extends Object
         $roleTitle = '',
         array $permissionArray = [],
         $member = null
-    )
-    {
-        if(! $name) {$name = $this->name;}
-        if(! $code) {$code = $this->code;}
-        if(! $parentGroup) { $parentGroup = $this->parentGroup;}
-        if(! $permissionCode) { $permissionCode = $this->permissionCode;}
-        if(! $permissionArray || count($permissionArray) === 0) { $permissionArray = $this->permissionArray;}
-        if(! $member) { $member = $this->member;}
-        if(!$name) {
-            $name = 'New Group '.rand(0,999999);
+    ) {
+        if (! $name) {
+            $name = $this->name;
         }
-        if(!$code) {
+        if (! $code) {
+            $code = $this->code;
+        }
+        if (! $parentGroup) {
+            $parentGroup = $this->parentGroup;
+        }
+        if (! $permissionCode) {
+            $permissionCode = $this->permissionCode;
+        }
+        if (! $permissionArray || count($permissionArray) === 0) {
+            $permissionArray = $this->permissionArray;
+        }
+        if (! $member) {
+            $member = $this->member;
+        }
+        if (!$name) {
+            $name = 'New Group '.rand(0, 999999);
+        }
+        if (!$code) {
             $code = $name;
         }
         $code = str_replace(' ', '_', $code);
@@ -247,8 +308,7 @@ class PermissionProviderFactory extends Object
                     db::alteration_message("DELETING double permission role $roleTitle", 'deleted');
                     $permissionRoleToDelete->delete();
                 }
-            }
-            elseif ($permissionRoleCount == 1) {
+            } elseif ($permissionRoleCount == 1) {
                 //do nothing
                 DB::alteration_message("$roleTitle role in place");
             } else {
@@ -284,8 +344,7 @@ class PermissionProviderFactory extends Object
                                 $permissionRoleCodeObjectToDelete->delete();
                             }
                             db::alteration_message('There is more than one Permission Role Code in '.$permissionRole->Title." with Code = $permissionRoleCode ($permissionRoleCodeObjectCount)", 'deleted');
-                        }
-                        elseif ($permissionRoleCodeObjectCount == 1) {
+                        } elseif ($permissionRoleCodeObjectCount == 1) {
                             //do nothing
                         } else {
                             $permissionRoleCodeObject = PermissionRoleCode::create();
