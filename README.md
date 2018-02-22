@@ -2,7 +2,6 @@
 [![Build Status](https://travis-ci.org/sunnysideup/silverstripe-permission_provider.svg?branch=master)](https://travis-ci.org/sunnysideup/silverstripe-permission_provider)
 [![Scrutinizer Code Quality](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-permission_provider/badges/quality-score.png?b=master)](https://scrutinizer-ci.com/g/sunnysideup/silverstripe-permission_provider/?branch=master)
 [![codecov.io](https://codecov.io/github/sunnysideup/silverstripe-permission_provider/coverage.svg?branch=master)](https://codecov.io/github/sunnysideup/silverstripe-permission_provider?branch=master)
-![helpfulrobot](https://helpfulrobot.io/sunnysideup/permission_provider/badge)
 
 [![Latest Stable Version](https://poser.pugx.org/sunnysideup/permission_provider/version)](https://packagist.org/packages/sunnysideup/permission_provider)
 [![License](https://poser.pugx.org/sunnysideup/permission_provider/license)](https://packagist.org/packages/sunnysideup/permission_provider)
@@ -17,17 +16,19 @@
  * [User Guide](docs/en/userguide.md)
  * [API Docs](http://docs.ssmods.com/sunnysideup/permission_provider/classes.xhtml)
 
+
 ## Requirements
 
 
 
-see [composer.json](composer.json) for details
+See [composer.json](composer.json) for details
+
 
 ### Suggested Modules
 
 
 
-see [composer.json](composer.json) for details
+See [composer.json](composer.json) for details
 
 
 ## Installation
@@ -47,9 +48,9 @@ file that shows options for the configuration of this module.
 We recommend that you:
 
   1. copy these `permission_provider.yml.example` files into your
-`mysite/_config` folder
-  2. remove the .example extension
-  3. delete the lines you not care about, and
+`mysite/_config` folder (where available - otherwise search for `private static $` in the module to see what can be configured)
+  2. remove the .example extension,
+  3. delete the lines you do not care about, and
   4. adjust the configurations that you would like to use.
 
 
@@ -63,10 +64,15 @@ We welcome any contributions. See [CONTRIBUTING.md](CONTRIBUTING.md) for more de
 
 
 
-You can pay us to create an improved / adapted version of this module for your own projects.  Please contact us if you like to find out more: [www.sunnysideup.co.nz](http://www.sunnysideup.co.nz)
+You can pay us to create an improved / adapted version of this module for your own projects.  Please contact us if you like to find out more: [www.sunnysideup.co.nz](http://www.sunnysideup.co.nz).  For exmaple, we can write tests for this module.  
 
 ## Author
 
 
 
 Sunny Side Up Ltd.
+
+
+## Care to see more modules?
+
+To find other modules, please visit [ssmods.com](http://ssmods.com/).
