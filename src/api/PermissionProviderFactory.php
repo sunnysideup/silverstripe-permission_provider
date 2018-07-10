@@ -1,7 +1,12 @@
 <?php
 
 
-class PermissionProviderFactory extends Object
+class PermissionProviderFactory extends ViewableData/*
+### @@@@ START UPGRADE REQUIRED @@@@ ###
+FIND:  extends Object
+NOTE: This used to extend Object, but object does not exist anymore.  
+### @@@@ END UPGRADE REQUIRED @@@@ ###
+*/
 {
     private static $_instance = null;
 
@@ -192,7 +197,7 @@ class PermissionProviderFactory extends Object
      * @param string          $permissionCode  Permission Code for the group (e.g. CMS_DO_THIS_OR_THAT)
      * @param string          $roleTitle       Role Title - e.g. Store Manager
      * @param array           $permissionArray Permission Array - list of permission codes applied to the group
-     * @param Member | String $member          Default Member added to the group (e.g. sales@mysite.co.nz). You can also provide an email address
+     * @param Member | String $member          Default Member added to the group (e.g. sales@app.co.nz). You can also provide an email address
      */
     public function CreateGroup(
         $code = '',
