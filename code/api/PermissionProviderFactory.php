@@ -17,6 +17,7 @@ class PermissionProviderFactory extends Object
     protected $email = '';
     protected $firstName = '';
     protected $surname = '';
+    protected $password = '';
     protected $code = '';
     protected $name = '';
     protected $parentGroup = null;
@@ -33,51 +34,61 @@ class PermissionProviderFactory extends Object
     public function setFirstName($firstName)
     {
         $this->firstName = $firstName;
+
         return $this;
     }
     public function setSurname($surname)
     {
         $this->surname = $surname;
+
         return $this;
     }
     public function setPassword($password)
     {
         $this->password = $password;
+
         return $this;
     }
     public function setCode($code)
     {
         $this->code = $code;
+
         return $this;
     }
     public function setName($name)
     {
         $this->name = $name;
+
         return $this;
     }
     public function setParentGroup($parentGroup)
     {
         $this->parentGroup = $parentGroup;
+
         return $this;
     }
     public function setPermissionCode($permissionCode)
     {
         $this->permissionCode = $permissionCode;
+
         return $this;
     }
     public function setRoleTitle($roleTitle)
     {
         $this->roleTitle = $roleTitle;
+
         return $this;
     }
     public function setPermissionArray($permissionArray)
     {
         $this->permissionArray = $permissionArray;
+
         return $this;
     }
     public function setMember($member)
     {
         $this->member = $member;
+
         return $this;
     }
 
