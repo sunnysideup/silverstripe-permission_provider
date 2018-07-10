@@ -1,6 +1,6 @@
 {
     "name": "sunnysideup/permission_provider",
-    "type": "silverstripe-module",
+    "type": "silverstripe-vendormodule",
     "description": "Make it easier to set up permission groups (creates a member / user, group, and role in one go) for the Silverstripe CMS.",
     "keywords": [
         "Silverstripe-CMS",
