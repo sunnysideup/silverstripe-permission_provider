@@ -1,0 +1,3 @@
+mappings:
+  PermissionProviderFactory: Sunnysideup\PermissionProvider\Api\PermissionProviderFactory
+  PermissionProviderBuildTask: Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask

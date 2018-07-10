@@ -1,5 +1,20 @@
 <?php
 
+namespace Sunnysideup\PermissionProvider\Api;
+
+use ViewableData;
+use Injector;
+use Director;
+use DataObject;
+use Member;
+use Group;
+use DB;
+use Permission;
+use PermissionRole;
+use db;
+use PermissionRoleCode;
+
+
 
 class PermissionProviderFactory extends ViewableData/*
 ### @@@@ START UPGRADE REQUIRED @@@@ ###

@@ -1,5 +1,12 @@
 <?php
 
+namespace Sunnysideup\PermissionProvider\Tasks;
+
+use BuildTask;
+use Permission;
+use DB;
+
+
 
 class PermissionProviderBuildTask extends BuildTask
 {
