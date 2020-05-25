@@ -131,7 +131,8 @@ class PermissionProviderFactory extends Object
         $email,
         $firstName = '',
         $surname = '',
-        $password = ''
+        $password = '',
+        $replacePassword = false
     ) {
         if (! $email) {
             $email = $this->email;
@@ -161,20 +162,22 @@ class PermissionProviderFactory extends Object
         }
 
         $filter = array('Email' => $email);
+        $memberExists = true;
         $member = DataObject::get_one(
             'Member',
             $filter,
             $cacheDataObjectGetOne = false
         );
         if (! $member) {
+            $memberExists = false;
             $member = Member::create($filter);
         }
 
         $member->FirstName = $firstName;
         $member->Surname = $surname;
         $member->write();
-        if ($password) {
-            $member->changePassword($password);
+        if (($password && !$memberExists) || ($password && $replacePassword)) {
+            $member->changePassword($password); 
             $member->PasswordExpiry = date('Y-m-d');
             $member->write();
         }
