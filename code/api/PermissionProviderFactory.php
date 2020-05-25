@@ -121,9 +121,10 @@ class PermissionProviderFactory extends Object
     /**
      * Create a member
      * @param       string $email
-     * @param       string $firstName   OPTIONAL
-     * @param       string $surname     OPTIONAL
-     * @param       string $password    OPTIONAL
+     * @param       string $firstName                   OPTIONAL
+     * @param       string $surname                     OPTIONAL
+     * @param       string $password                    OPTIONAL
+     * @param       boolean $replaceExistingPassword    OPTIONAL
      *
      * @return Member
      */
@@ -132,7 +133,7 @@ class PermissionProviderFactory extends Object
         $firstName = '',
         $surname = '',
         $password = '',
-        $replacePassword = false
+        $replaceExistingPassword = false
     ) {
         if (! $email) {
             $email = $this->email;
@@ -176,7 +177,7 @@ class PermissionProviderFactory extends Object
         $member->FirstName = $firstName;
         $member->Surname = $surname;
         $member->write();
-        if (($password && !$memberExists) || ($password && $replacePassword)) {
+        if (($password && !$memberExists) || ($password && $replaceExistingPassword)) {
             $member->changePassword($password); 
             $member->PasswordExpiry = date('Y-m-d');
             $member->write();
