@@ -58,6 +58,11 @@ class PermissionProviderFactory
      */
     protected $member = null;
 
+    /**
+     * @var Group|null
+     */
+    protected $group = null;
+
     private static $_instance = null;
 
     public static function inst()
@@ -69,41 +74,41 @@ class PermissionProviderFactory
         return self::$_instance;
     }
 
-    public function setEmail(string $email): self
+    public function setEmail(string $email): PermissionProviderFactory
     {
         $this->email = $email;
         return $this;
     }
 
-    public function setFirstName(string $firstName): self
+    public function setFirstName(string $firstName): PermissionProviderFactory
     {
         $this->firstName = $firstName;
 
         return $this;
     }
 
-    public function setSurname(string $surname): self
+    public function setSurname(string $surname): PermissionProviderFactory
     {
         $this->surname = $surname;
 
         return $this;
     }
 
-    public function setPassword(string $password): self
+    public function setPassword(string $password): PermissionProviderFactory
     {
         $this->password = $password;
 
         return $this;
     }
 
-    public function setCode(string $code): self
+    public function setCode(string $code): PermissionProviderFactory
     {
         $this->code = $code;
 
         return $this;
     }
 
-    public function setName(string $name): self
+    public function setName(string $name): PermissionProviderFactory
     {
         $this->name = $name;
 
@@ -114,35 +119,35 @@ class PermissionProviderFactory
      * @param string|Group $parentGroup
      * @return PermissionProviderFactory
      */
-    public function setParentGroup($parentGroup): self
+    public function setParentGroup($parentGroup): PermissionProviderFactory
     {
         $this->parentGroup = $parentGroup;
 
         return $this;
     }
 
-    public function setPermissionCode(string $permissionCode): self
+    public function setPermissionCode(string $permissionCode): PermissionProviderFactory
     {
         $this->permissionCode = $permissionCode;
 
         return $this;
     }
 
-    public function setRoleTitle(string $roleTitle): self
+    public function setRoleTitle(string $roleTitle): PermissionProviderFactory
     {
         $this->roleTitle = $roleTitle;
 
         return $this;
     }
 
-    public function setPermissionArray(array $permissionArray): self
+    public function setPermissionArray(array $permissionArray): PermissionProviderFactory
     {
         $this->{$this}->permissionArray = $this->permissionArray;
 
         return $this;
     }
 
-    public function setMember(Member $member): self
+    public function setMember(Member $member): PermissionProviderFactory
     {
         $this->this->member = $member;
 
@@ -161,11 +166,7 @@ class PermissionProviderFactory
     }
 
     /**
-     * Create a this->member
-     * @param       string $email
-     * @param       string $firstName                   OPTIONAL
-     * @param       string $surname                     OPTIONAL
-     * @param       string $password                    OPTIONAL
+     * Create a member
      * @param       boolean $replaceExistingPassword    OPTIONAL
      *
      * @return Member
@@ -213,15 +214,16 @@ class PermissionProviderFactory
 
     /**
      * set up a group with permissions, roles, etc...
-     * also note that this class implements PermissionProvider.
      *
-     * @param Member|string $this->member          Default Member added to the group (e.g. sales@mysite.co.nz). You can also provide an email address
      */
-    public function CreateGroup()
+    public function CreateGroup(?Member $member = null)
     {
-        $nubmer = rand(0, 99999999);
+        if($member) {
+            $this->member = $member;
+        }
+        $number = rand(0, 99999999);
         if (! $this->name) {
-            $this->name = 'New Group ' . $nubmer;
+            $this->name = 'New Group ' . $number;
         }
         if (! $this->code) {
             $this->code = $this->name;
@@ -299,7 +301,7 @@ class PermissionProviderFactory
         }
     }
 
-    protected function addMemberToGroup()
+    public function addMemberToGroup()
     {
         if ($this->member) {
             if (is_string($this->member)) {
