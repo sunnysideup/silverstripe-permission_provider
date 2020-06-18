@@ -1,0 +1,4 @@
+SilverStripe\ORM\DatabaseAdmin:
+  classname_value_remapping:
+    PermissionProviderFactory: Sunnysideup\PermissionProvider\Api\PermissionProviderFactory
+    PermissionProviderBuildTask: Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask
