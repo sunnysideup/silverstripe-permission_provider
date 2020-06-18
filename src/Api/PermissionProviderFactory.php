@@ -1,5 +1,16 @@
 <?php
 
+namespace Sunnysideup\PermissionProvider\Api;
+
+use SilverStripe\Control\Director;
+use SilverStripe\Core\Injector\Injector;
+use SilverStripe\ORM\DataObject;
+use SilverStripe\ORM\DB;
+use SilverStripe\Security\Group;
+use SilverStripe\Security\Member;
+use SilverStripe\Security\Permission;
+use SilverStripe\Security\PermissionRole;
+use SilverStripe\Security\PermissionRoleCode;
 
 class PermissionProviderFactory
 {
@@ -68,7 +79,7 @@ class PermissionProviderFactory
     public static function inst()
     {
         if (self::$_instance === null) {
-            self::$_instance = Injector::inst()->get('PermissionProviderFactory');
+            self::$_instance = Injector::inst()->get(PermissionProviderFactory::class);
         }
 
         return self::$_instance;
@@ -157,7 +168,7 @@ class PermissionProviderFactory
     /**
      * @return Group and this->member, using the default settings
      */
-    public function CreateGroupAndMember()
+    public function CreateGroupAndMember() : Group
     {
         $this->checkVariables();
         $this->member = $this->CreateDefaultMember();
@@ -172,13 +183,15 @@ class PermissionProviderFactory
      *
      * @return Member
      */
-    public function CreateDefaultMember(?bool $replaceExistingPassword = false)
+    public function CreateDefaultMember(?bool $replaceExistingPassword = false) :Member
     {
         $this->checkVariables();
         $filter = ['Email' => $this->email];
         $memberExists = true;
-        $this->member = DataObject::get_one(
-            'Member',
+
+        /** @var Member|null */
+        $this->member = Member::get_one(
+            Member::class,
             $filter,
             $cacheDataObjectGetOne = false
         );
@@ -196,13 +209,14 @@ class PermissionProviderFactory
             $this->member->write();
         }
 
+        /** @var Member */
         return $this->member;
     }
 
     /**
      * set up a group with permissions, roles, etc...
      */
-    public function CreateGroup(?Member $member = null)
+    public function CreateGroup(?Member $member = null) : Group
     {
         if ($member) {
             $this->member = $member;
@@ -230,7 +244,7 @@ class PermissionProviderFactory
             if (is_string($this->parentGroup)) {
                 $this->parentGroupName = $this->parentGroup;
                 $this->parentGroup = DataObject::get_one(
-                    'Group',
+                    Group::class,
                     ['Title' => $this->parentGroupName],
                     $cacheDataObjectGetOne = false
                 );
@@ -256,7 +270,7 @@ class PermissionProviderFactory
         return $this->group;
     }
 
-    public function addMemberToGroup(?Member $member = null)
+    public function AddMemberToGroup(?Member $member = null)
     {
         if ($member) {
             $this->member = $member;
@@ -265,7 +279,7 @@ class PermissionProviderFactory
         if ($this->member) {
             if (is_string($this->member)) {
                 $this->email = $this->member;
-                $this->member = $this->CreateDefaultMember($this->email, $this->code, $this->name);
+                $this->member = $this->CreateDefaultMember();
             }
             if ($this->member) {
                 DB::alteration_message(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
@@ -318,7 +332,7 @@ class PermissionProviderFactory
             if ($permissionRoleCount > 1) {
                 DB::alteration_message("There is more than one Permission Role with title {$this->roleTitle} (${permissionRoleCount})", 'deleted');
                 $permissionRolesFirst = DataObject::get_one(
-                    'PermissionRole',
+                    PermissionRole::class,
                     ['Title' => $this->roleTitle],
                     $cacheDataObjectGetOne = false
                 );
@@ -340,7 +354,7 @@ class PermissionProviderFactory
                 $permissionRole->write();
             }
             $permissionRole = DataObject::get_one(
-                'PermissionRole',
+                PermissionRole::class,
                 ['Title' => $this->roleTitle],
                 $cacheDataObjectGetOne = false
             );
@@ -349,7 +363,7 @@ class PermissionProviderFactory
                     DB::alteration_message('working with ' . implode(', ', $this->permissionArray));
                     foreach ($this->permissionArray as $permissionRoleCode) {
                         $permissionRoleCodeObject = DataObject::get_one(
-                            'PermissionRoleCode',
+                            PermissionRoleCode::class,
                             ['Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID],
                             $cacheDataObjectGetOne = false
                         );
@@ -377,7 +391,9 @@ class PermissionProviderFactory
                     }
                 }
                 if ($this->group && $permissionRole) {
-                    if (DB::query('SELECT COUNT(*) FROM Group_Roles WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' . $permissionRole->ID)->value() === 0) {
+                    $count = DB::query('SELECT COUNT(*) FROM Group_Roles WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' . $permissionRole->ID)->value();
+                    $count = intval($count);
+                    if ($count === 0) {
                         DB::alteration_message('ADDING ' . $permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group', 'created');
                         $existingGroups = $permissionRole->Groups();
                         $existingGroups->add($this->group);
