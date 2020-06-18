@@ -1,5 +1,18 @@
 <?php
 
+namespace Sunnysideup\PermissionProvider\Api;
+
+use Injector;
+use Member;
+use DataObject;
+use Group;
+use DB;
+use Permission;
+use PermissionRole;
+use PermissionRoleCode;
+use Director;
+
+
 
 class PermissionProviderFactory
 {
