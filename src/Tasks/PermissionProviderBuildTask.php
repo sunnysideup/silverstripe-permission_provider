@@ -2,9 +2,13 @@
 
 namespace Sunnysideup\PermissionProvider\Tasks;
 
-use BuildTask;
-use Permission;
-use DB;
+
+
+
+use SilverStripe\Security\Permission;
+use SilverStripe\ORM\DB;
+use SilverStripe\Dev\BuildTask;
+
 
 
 
