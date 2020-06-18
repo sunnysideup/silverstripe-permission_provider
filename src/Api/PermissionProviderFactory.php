@@ -270,7 +270,7 @@ class PermissionProviderFactory
         return $this->group;
     }
 
-    public function addMemberToGroup(?Member $member = null)
+    public function AddMemberToGroup(?Member $member = null)
     {
         if ($member) {
             $this->member = $member;

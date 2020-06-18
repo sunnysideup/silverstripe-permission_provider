@@ -14,5 +14,8 @@ with a default member
         ->setPermissionCode('CMS_ACCESS_TOUR_ADMIN')
         ->setRoleTitle('Tour Manager Privileges')
         ->setPermissionArray(['CMS_ACCESS_TourBookingsAdmin'])
-        ->run();
+        ->CreateGroupAndMember();
+        // ->CreateDefaultMember();
+        // ->CreateGroup();
+        // ->AddMemberToGroup($member);
 ```
