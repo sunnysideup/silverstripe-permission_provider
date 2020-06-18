@@ -168,7 +168,7 @@ class PermissionProviderFactory
     /**
      * @return Group and this->member, using the default settings
      */
-    public function CreateGroupAndMember() : Group
+    public function CreateGroupAndMember(): Group
     {
         $this->checkVariables();
         $this->member = $this->CreateDefaultMember();
@@ -183,7 +183,7 @@ class PermissionProviderFactory
      *
      * @return Member
      */
-    public function CreateDefaultMember(?bool $replaceExistingPassword = false) :Member
+    public function CreateDefaultMember(?bool $replaceExistingPassword = false): Member
     {
         $this->checkVariables();
         $filter = ['Email' => $this->email];
@@ -216,7 +216,7 @@ class PermissionProviderFactory
     /**
      * set up a group with permissions, roles, etc...
      */
-    public function CreateGroup(?Member $member = null) : Group
+    public function CreateGroup(?Member $member = null): Group
     {
         if ($member) {
             $this->member = $member;
