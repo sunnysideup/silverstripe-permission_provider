@@ -159,6 +159,7 @@ class PermissionProviderFactory
      */
     public function CreateGroupAndMember()
     {
+        $this->checkVariables();
         $this->member = $this->CreateDefaultMember();
         $this->group = $this->CreateGroup($this->member);
 
@@ -171,23 +172,9 @@ class PermissionProviderFactory
      *
      * @return Member
      */
-    public function CreateDefaultMember(
-        $replaceExistingPassword = false
-    ) {
-        if (! $this->email) {
-            $baseURL = Director::absoluteBaseURL();
-            $baseURL = str_replace('https://', '', $baseURL);
-            $baseURL = str_replace('http://', '', $baseURL);
-            $baseURL = trim($baseURL, '/');
-            $this->email = 'random.email.' . rand(0, 999999) . '@' . $baseURL;
-        }
-        if (! $this->firstName) {
-            $this->firstName = 'Default';
-        }
-        if (! $this->surname) {
-            $this->surname = 'User';
-        }
-
+    public function CreateDefaultMember(?bool $replaceExistingPassword = false)
+    {
+        $this->checkVariables();
         $filter = ['Email' => $this->email];
         $memberExists = true;
         $this->member = DataObject::get_one(
@@ -214,25 +201,13 @@ class PermissionProviderFactory
 
     /**
      * set up a group with permissions, roles, etc...
-     *
      */
     public function CreateGroup(?Member $member = null)
     {
-        if($member) {
+        if ($member) {
             $this->member = $member;
         }
-        $number = rand(0, 99999999);
-        if (! $this->name) {
-            $this->name = 'New Group ' . $number;
-        }
-        if (! $this->code) {
-            $this->code = $this->name;
-        }
-        $this->code = str_replace(' ', '_', $this->code);
-        $this->code = preg_replace("/[\W_]+/u", '', $this->code);
-        //changing to lower case seems to be very important
-        //unidentified bug so far
-        $this->code = strtolower($this->code);
+        $this->checkVariables();
 
         $filterArrayForGroup = ['Code' => $this->code];
         $this->groupDataList = Group::get()->filter($filterArrayForGroup);
@@ -281,6 +256,26 @@ class PermissionProviderFactory
         return $this->group;
     }
 
+    public function addMemberToGroup(?Member $member = null)
+    {
+        if ($member) {
+            $this->member = $member;
+        }
+        $this->checkVariables();
+        if ($this->member) {
+            if (is_string($this->member)) {
+                $this->email = $this->member;
+                $this->member = $this->CreateDefaultMember($this->email, $this->code, $this->name);
+            }
+            if ($this->member) {
+                DB::alteration_message(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
+                $this->member->Groups()->add($this->group);
+            }
+        } else {
+            DB::alteration_message('No user provided.');
+        }
+    }
+
     protected function checkDoubleGroups(): void
     {
         $doubleGroups = Group::get()
@@ -298,22 +293,6 @@ class PermissionProviderFactory
                 DB::alteration_message('deleting double group ', 'deleted');
                 $doubleGroup->delete();
             }
-        }
-    }
-
-    public function addMemberToGroup()
-    {
-        if ($this->member) {
-            if (is_string($this->member)) {
-                $this->email = $this->member;
-                $this->member = $this->CreateDefaultMember($this->email, $this->code, $this->name);
-            }
-            if ($this->member) {
-                DB::alteration_message(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
-                $this->member->Groups()->add($this->group);
-            }
-        } else {
-            DB::alteration_message('No user provided.');
         }
     }
 
@@ -410,5 +389,48 @@ class PermissionProviderFactory
                 }
             }
         }
+    }
+
+    protected function checkVariables()
+    {
+        if ($this->member) {
+            if (! $this->email) {
+                $this->email = $this->member->Email;
+            }
+            if (! $this->firstName) {
+                $this->firstName = $this->member->FirstName;
+            }
+            if (! $this->surname) {
+                $this->surname = $this->member->Surname;
+            }
+        }
+        if (! $this->email) {
+            $baseURL = Director::absoluteBaseURL();
+            $baseURL = str_replace('https://', '', $baseURL);
+            $baseURL = str_replace('http://', '', $baseURL);
+            $baseURL = trim($baseURL, '/');
+            $this->email = 'random.email.' . rand(0, 999999) . '@' . $baseURL;
+        }
+
+        if (! $this->firstName) {
+            $this->firstName = 'Default';
+        }
+
+        if (! $this->surname) {
+            $this->surname = 'User';
+        }
+
+        if (! $this->name) {
+            $number = rand(0, 99999999);
+            $this->name = 'New Group ' . $number;
+        }
+        if (! $this->code) {
+            $this->code = $this->name;
+        }
+        $this->code = str_replace(' ', '_', $this->code);
+        $this->code = preg_replace("/[\W_]+/u", '', $this->code);
+        //changing to lower case seems to be very important
+        //unidentified bug so far
+        $this->code = strtolower($this->code);
     }
 }
