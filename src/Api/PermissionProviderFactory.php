@@ -12,8 +12,16 @@ use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
 use SilverStripe\Security\PermissionRoleCode;
 
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Extensible;
+use SilverStripe\Core\Injector\Injectable;
+
 class PermissionProviderFactory
 {
+    use Extensible;
+    use Injectable;
+    use Configurable;
+
     /**
      * @var string
      */
