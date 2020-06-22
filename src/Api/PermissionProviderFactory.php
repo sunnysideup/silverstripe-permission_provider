@@ -161,7 +161,7 @@ class PermissionProviderFactory
 
     public function setPermissionArray(array $permissionArray): PermissionProviderFactory
     {
-        $this->{$this}->permissionArray = $this->permissionArray;
+        $this->permissionArray = $permissionArray;
 
         return $this;
     }
