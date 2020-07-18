@@ -158,7 +158,7 @@ class PermissionProviderFactory
         return $this;
     }
 
-    public function setName(string $groupName): PermissionProviderFactory
+    public function setGroupName(string $groupName): PermissionProviderFactory
     {
         $this->groupName = $groupName;
 
@@ -273,10 +273,9 @@ class PermissionProviderFactory
         $this->group->Locked = 1;
         $this->group->Title = $this->groupName;
 
-        $this->addOrUpdateParentGroup();
-
         $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->code}) group", $groupStyle);
 
+        $this->addOrUpdateParentGroup();
         $this->checkDoubleGroups();
         $this->addMemberToGroup();
         $this->grantPermissions();
