@@ -11,6 +11,7 @@ We use a Research Member as an example below:
         ->setFirstName('Tour')
         ->setSurname('Manager')
         ->setPassword('change-on-next-login-123')
+        ->addRandomPassword()
         ->setName('Research Managers')
         ->setCode('research_managers')
         ->setPermissionCode('CMS_ACCESS_RESEARCH_ADMIN')

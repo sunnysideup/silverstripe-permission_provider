@@ -46,6 +46,11 @@ class PermissionProviderFactory
     protected $password = '';
 
     /**
+     * @var bool
+     */
+    protected $replaceExistingPassword = false;
+
+    /**
      * @var string
      */
     protected $code = '';
@@ -139,6 +144,13 @@ class PermissionProviderFactory
         return $this;
     }
 
+    public function setReplaceExistingPassword(bool $b): PermissionProviderFactory
+    {
+        $this->replaceExistingPassword = $b;
+
+        return $this;
+    }
+
     public function setCode(string $code): PermissionProviderFactory
     {
         $this->code = $code;
@@ -206,11 +218,10 @@ class PermissionProviderFactory
 
     /**
      * Create a member
-     * @param       boolean $replaceExistingPassword    OPTIONAL
      *
      * @return Member
      */
-    public function CreateDefaultMember(?bool $replaceExistingPassword = false): Member
+    public function CreateDefaultMember(): Member
     {
         $this->checkVariables();
         $filter = ['Email' => $this->email];
@@ -230,12 +241,11 @@ class PermissionProviderFactory
         $this->member->FirstName = $this->firstName;
         $this->member->Surname = $this->surname;
         $this->member->write();
-        $this->addPassword($newMember);
+        $this->updatePassword($newMember);
 
         /** @var Member */
         return $this->member;
     }
-
 
     /**
      * set up a group with permissions, roles, etc...
@@ -288,10 +298,8 @@ class PermissionProviderFactory
                 $this->email = $this->member;
                 $this->member = $this->CreateDefaultMember();
             }
-            if ($this->member) {
-                $this->showDebugMessage(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
-                $this->member->Groups()->add($this->group);
-            }
+            $this->showDebugMessage(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
+            $this->member->Groups()->add($this->group);
         } else {
             $this->showDebugMessage('No user provided.');
         }
@@ -363,7 +371,6 @@ class PermissionProviderFactory
         unset($this->permissionCode);
     }
 
-
     protected function addOrUpdateRole()
     {
         if ($this->roleTitle) {
@@ -405,7 +412,7 @@ class PermissionProviderFactory
     protected function addPermissionsToRole()
     {
         if ($this->permissionRole) {
-            if(is_array($this->permissionArray) && count($this->permissionArray)) {
+            if (is_array($this->permissionArray) && count($this->permissionArray)) {
                 $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
                 foreach ($this->permissionArray as $permissionRoleCode) {
                     $permissionRoleCodeObject = DataObject::get_one(
@@ -437,9 +444,7 @@ class PermissionProviderFactory
                 }
             }
         }
-
     }
-
 
     protected function addRoleToGroup()
     {
@@ -456,7 +461,6 @@ class PermissionProviderFactory
         } else {
             $this->showDebugMessage('ERROR: missing group or this->permissionRole', 'deleted');
         }
-
     }
 
     protected function checkVariables()
@@ -507,14 +511,13 @@ class PermissionProviderFactory
         $this->code = strtolower($this->code);
     }
 
-
-    protected function addPassword(bool $newMember)
+    protected function updatePassword(bool $newMember)
     {
-        if($newMember && ! $this->password) {
+        if ($newMember && ! $this->password) {
             $this->addRandomPassword();
         }
-        if($this->password) {
-            if ($newMember || $replaceExistingPassword) {
+        if ($this->password) {
+            if ($newMember || $this->replaceExistingPassword) {
                 $this->member->changePassword($this->password);
                 $this->member->PasswordExpiry = date('Y-m-d');
                 $this->member->write();
@@ -522,9 +525,9 @@ class PermissionProviderFactory
         }
     }
 
-    protected function showDebugMessage($message, $style)
+    protected function showDebugMessage(string $message, $style = '')
     {
-        if($this->debug){
+        if ($this->debug) {
             DB::alteration_message($message, $style);
         }
     }
