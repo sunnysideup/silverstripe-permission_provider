@@ -3,24 +3,27 @@
 namespace Sunnysideup\PermissionProvider\Api;
 
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Configurable;
+use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
+
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
 use SilverStripe\Security\PermissionRoleCode;
 
-use SilverStripe\Core\Config\Configurable;
-use SilverStripe\Core\Extensible;
-use SilverStripe\Core\Injector\Injectable;
-
 class PermissionProviderFactory
 {
-    use Extensible;
     use Injectable;
     use Configurable;
+
+    /**
+     * @var bool
+     */
+    protected $debug = false;
 
     /**
      * @var string
@@ -50,7 +53,7 @@ class PermissionProviderFactory
     /**
      * @var string
      */
-    protected $name = '';
+    protected $groupName = '';
 
     /**
      * @var string|Group
@@ -81,6 +84,11 @@ class PermissionProviderFactory
      * @var Group|null
      */
     protected $group = null;
+
+    /**
+     * @var PermissionRole|null
+     */
+    protected $permissionRole = null;
 
     private static $_instance = null;
 
@@ -120,6 +128,17 @@ class PermissionProviderFactory
         return $this;
     }
 
+    public function addRandomPassword(): PermissionProviderFactory
+    {
+        $pass = [];
+        for ($i = 0; $i < 23; $i++) {
+            $pass[] = chr(rand(32, 126));
+        }
+        $this->password = implode($pass);
+
+        return $this;
+    }
+
     public function setCode(string $code): PermissionProviderFactory
     {
         $this->code = $code;
@@ -127,9 +146,9 @@ class PermissionProviderFactory
         return $this;
     }
 
-    public function setName(string $name): PermissionProviderFactory
+    public function setName(string $groupName): PermissionProviderFactory
     {
-        $this->name = $name;
+        $this->groupName = $groupName;
 
         return $this;
     }
@@ -195,7 +214,7 @@ class PermissionProviderFactory
     {
         $this->checkVariables();
         $filter = ['Email' => $this->email];
-        $memberExists = true;
+        $newMember = false;
 
         /** @var Member|null */
         $this->member = Member::get_one(
@@ -204,22 +223,19 @@ class PermissionProviderFactory
             $cacheDataObjectGetOne = false
         );
         if (! $this->member) {
-            $memberExists = false;
+            $newMember = true;
             $this->member = Member::create($filter);
         }
 
         $this->member->FirstName = $this->firstName;
         $this->member->Surname = $this->surname;
         $this->member->write();
-        if (($this->password && ! $memberExists) || ($this->password && $replaceExistingPassword)) {
-            $this->member->changePassword($this->password);
-            $this->member->PasswordExpiry = date('Y-m-d');
-            $this->member->write();
-        }
+        $this->addPassword($newMember);
 
         /** @var Member */
         return $this->member;
     }
+
 
     /**
      * set up a group with permissions, roles, etc...
@@ -234,51 +250,34 @@ class PermissionProviderFactory
         $filterArrayForGroup = ['Code' => $this->code];
         $this->groupDataList = Group::get()->filter($filterArrayForGroup);
         $this->groupCount = $this->groupDataList->count();
-        $this->groupStyle = 'updated';
+        $groupStyle = 'updated';
         if ($this->groupCount > 1) {
-            user_error("There is more than one group with the {$this->name} ({$this->code}) Code");
+            user_error("There is more than one group with the {$this->groupName} ({$this->code}) Code", E_USER_ERROR);
         }
         if ($this->groupCount === 0) {
             $this->group = Group::create($filterArrayForGroup);
-            $this->groupStyle = 'created';
+            $groupStyle = 'created';
         } else {
             $this->group = $this->groupDataList->First();
         }
         $this->group->Locked = 1;
-        $this->group->Title = $this->name;
-        $this->parentGroupStyle = 'updated';
-        if ($this->parentGroup) {
-            DB::alteration_message('adding parent group');
-            if (is_string($this->parentGroup)) {
-                $this->parentGroupName = $this->parentGroup;
-                $this->parentGroup = DataObject::get_one(
-                    Group::class,
-                    ['Title' => $this->parentGroupName],
-                    $cacheDataObjectGetOne = false
-                );
-                if (! $this->parentGroup) {
-                    $this->parentGroup = Group::create();
-                    $this->parentGroupStyle = 'created';
-                    $this->parentGroup->Title = $this->parentGroupName;
-                    $this->parentGroup->write();
-                    DB::alteration_message("{$this->parentGroupStyle} {$this->parentGroupName}", $this->parentGroupStyle);
-                }
-            }
-            if ($this->parentGroup) {
-                $this->group->ParentID = $this->parentGroup->ID;
-            }
-        }
-        $this->group->write();
-        DB::alteration_message("{$this->groupStyle} {$this->name} ({$this->code}) group", $this->groupStyle);
+        $this->group->Title = $this->groupName;
+
+        $this->addOrUpdateParentGroup();
+
+        $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->code}) group", $groupStyle);
 
         $this->checkDoubleGroups();
         $this->addMemberToGroup();
         $this->grantPermissions();
+        $this->addOrUpdateRole();
+        $this->addPermissionsToRole();
+        $this->addRoleToGroup();
 
         return $this->group;
     }
 
-    public function AddMemberToGroup(?Member $member = null)
+    public function AddMemberToGroup(?Member $member = null): PermissionProviderFactory
     {
         if ($member) {
             $this->member = $member;
@@ -290,11 +289,40 @@ class PermissionProviderFactory
                 $this->member = $this->CreateDefaultMember();
             }
             if ($this->member) {
-                DB::alteration_message(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
+                $this->showDebugMessage(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
                 $this->member->Groups()->add($this->group);
             }
         } else {
-            DB::alteration_message('No user provided.');
+            $this->showDebugMessage('No user provided.');
+        }
+
+        return $this;
+    }
+
+    protected function addOrUpdateParentGroup()
+    {
+        $parentGroupStyle = 'updated';
+        if ($this->parentGroup) {
+            $this->showDebugMessage('adding parent group');
+            if (is_string($this->parentGroup)) {
+                $this->parentGroupName = $this->parentGroup;
+                $this->parentGroup = DataObject::get_one(
+                    Group::class,
+                    ['Title' => $this->parentGroupName],
+                    $cacheDataObjectGetOne = false
+                );
+                if (! $this->parentGroup) {
+                    $this->parentGroup = Group::create();
+                    $parentGroupStyle = 'created';
+                    $this->parentGroup->Title = $this->parentGroupName;
+                    $this->parentGroup->write();
+                    $this->showDebugMessage("{$parentGroupStyle} {$this->parentGroupName}");
+                }
+            }
+            if ($this->parentGroup instanceof Group) {
+                $this->group->ParentID = $this->parentGroup->ID;
+                $this->group->write();
+            }
         }
     }
 
@@ -304,15 +332,15 @@ class PermissionProviderFactory
             ->filter(['Code' => $this->code])
             ->exclude(['ID' => $this->group->ID]);
         if ($doubleGroups->count()) {
-            DB::alteration_message($doubleGroups->count() . ' groups with the same name', 'deleted');
+            $this->showDebugMessage($doubleGroups->count() . ' groups with the same name', 'deleted');
             $realMembers = $this->group->Members();
             foreach ($doubleGroups as $doubleGroup) {
                 $fakeMembers = $doubleGroup->Members();
                 foreach ($fakeMembers as $fakeMember) {
-                    DB::alteration_message('adding customers: ' . $fakeMember->Email, 'created');
+                    $this->showDebugMessage('adding customers: ' . $fakeMember->Email, 'created');
                     $realMembers->add($fakeMember);
                 }
-                DB::alteration_message('deleting double group ', 'deleted');
+                $this->showDebugMessage('deleting double group ', 'deleted');
                 $doubleGroup->delete();
             }
         }
@@ -323,22 +351,27 @@ class PermissionProviderFactory
         if ($this->permissionCode) {
             $this->permissionCodeCount = DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '" . $this->group->ID . "' AND \"Code\" LIKE '" . $this->permissionCode . "'")->numRecords();
             if ($this->permissionCodeCount === 0) {
-                DB::alteration_message('granting ' . $this->name . " permission code {$this->permissionCode} ", 'created');
+                $this->showDebugMessage('granting ' . $this->groupName . " permission code {$this->permissionCode} ", 'created');
                 Permission::grant($this->group->ID, $this->permissionCode);
             } else {
-                DB::alteration_message($this->name . " permission code {$this->permissionCode} already granted");
+                $this->showDebugMessage($this->groupName . " permission code {$this->permissionCode} already granted");
             }
         }
         //we unset it here to avoid confusion with the
         //other codes we use later on
         $this->permissionArray[] = $this->permissionCode;
         unset($this->permissionCode);
+    }
+
+
+    protected function addOrUpdateRole()
+    {
         if ($this->roleTitle) {
             $permissionRoleCount = PermissionRole::get()
                 ->Filter(['Title' => $this->roleTitle])
                 ->Count();
             if ($permissionRoleCount > 1) {
-                DB::alteration_message("There is more than one Permission Role with title {$this->roleTitle} (${permissionRoleCount})", 'deleted');
+                $this->showDebugMessage("There is more than one Permission Role with title {$this->roleTitle} (${permissionRoleCount})", 'deleted');
                 $permissionRolesFirst = DataObject::get_one(
                     PermissionRole::class,
                     ['Title' => $this->roleTitle],
@@ -348,76 +381,87 @@ class PermissionProviderFactory
                     ->Filter(['Title' => $this->roleTitle])
                     ->Exclude(['ID' => $permissionRolesFirst->ID]);
                 foreach ($permissionRolesToDelete as $permissionRoleToDelete) {
-                    DB::alteration_message("DELETING double permission role {$this->roleTitle}", 'deleted');
+                    $this->showDebugMessage("DELETING double permission role {$this->roleTitle}", 'deleted');
                     $permissionRoleToDelete->delete();
                 }
             } elseif ($permissionRoleCount === 1) {
                 //do nothing
-                DB::alteration_message("{$this->roleTitle} role in place");
+                $this->showDebugMessage("{$this->roleTitle} role in place");
             } else {
-                DB::alteration_message("adding {$this->roleTitle} role", 'created');
-                $permissionRole = PermissionRole::create();
-                $permissionRole->Title = $this->roleTitle;
-                $permissionRole->OnlyAdminCanApply = true;
-                $permissionRole->write();
+                $this->showDebugMessage("adding {$this->roleTitle} role", 'created');
+                $this->permissionRole = PermissionRole::create();
+                $this->permissionRole->Title = $this->roleTitle;
+                $this->permissionRole->OnlyAdminCanApply = true;
+                $this->permissionRole->write();
             }
-            $permissionRole = DataObject::get_one(
+            $this->permissionRole = DataObject::get_one(
                 PermissionRole::class,
                 ['Title' => $this->roleTitle],
                 $cacheDataObjectGetOne = false
             );
-            if ($permissionRole) {
-                if (is_array($this->permissionArray) && count($this->permissionArray)) {
-                    DB::alteration_message('working with ' . implode(', ', $this->permissionArray));
-                    foreach ($this->permissionArray as $permissionRoleCode) {
-                        $permissionRoleCodeObject = DataObject::get_one(
-                            PermissionRoleCode::class,
-                            ['Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID],
-                            $cacheDataObjectGetOne = false
-                        );
-                        $permissionRoleCodeObjectCount = PermissionRoleCode::get()
-                            ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID])
-                            ->Count();
-                        if ($permissionRoleCodeObjectCount > 1) {
-                            $permissionRoleCodeObjectsToDelete = PermissionRoleCode::get()
-                                ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $permissionRole->ID])
-                                ->Exclude(['ID' => $permissionRoleCodeObject->ID]);
-                            foreach ($permissionRoleCodeObjectsToDelete as $permissionRoleCodeObjectToDelete) {
-                                DB::alteration_message("DELETING double permission code ${permissionRoleCode} for " . $permissionRole->Title, 'deleted');
-                                $permissionRoleCodeObjectToDelete->delete();
-                            }
-                            DB::alteration_message('There is more than one Permission Role Code in ' . $permissionRole->Title . " with Code = ${permissionRoleCode} (${permissionRoleCodeObjectCount})", 'deleted');
-                        } elseif ($permissionRoleCodeObjectCount === 1) {
-                            //do nothing
-                        } else {
-                            $permissionRoleCodeObject = PermissionRoleCode::create();
-                            $permissionRoleCodeObject->Code = $permissionRoleCode;
-                            $permissionRoleCodeObject->RoleID = $permissionRole->ID;
+        }
+    }
+
+    protected function addPermissionsToRole()
+    {
+        if ($this->permissionRole) {
+            if(is_array($this->permissionArray) && count($this->permissionArray)) {
+                $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
+                foreach ($this->permissionArray as $permissionRoleCode) {
+                    $permissionRoleCodeObject = DataObject::get_one(
+                        PermissionRoleCode::class,
+                        ['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID],
+                        $cacheDataObjectGetOne = false
+                    );
+                    $permissionRoleCodeObjectCount = PermissionRoleCode::get()
+                        ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
+                        ->Count();
+                    if ($permissionRoleCodeObjectCount > 1) {
+                        $permissionRoleCodeObjectsToDelete = PermissionRoleCode::get()
+                            ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
+                            ->Exclude(['ID' => $permissionRoleCodeObject->ID]);
+                        foreach ($permissionRoleCodeObjectsToDelete as $permissionRoleCodeObjectToDelete) {
+                            $this->showDebugMessage("DELETING double permission code ${permissionRoleCode} for " . $this->permissionRole->Title, 'deleted');
+                            $permissionRoleCodeObjectToDelete->delete();
                         }
-                        DB::alteration_message('adding ' . $permissionRoleCodeObject->Code . ' to ' . $permissionRole->Title);
-                        $permissionRoleCodeObject->write();
-                    }
-                }
-                if ($this->group && $permissionRole) {
-                    $count = DB::query('SELECT COUNT(*) FROM Group_Roles WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' . $permissionRole->ID)->value();
-                    $count = intval($count);
-                    if ($count === 0) {
-                        DB::alteration_message('ADDING ' . $permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group', 'created');
-                        $existingGroups = $permissionRole->Groups();
-                        $existingGroups->add($this->group);
+                        $this->showDebugMessage('There is more than one Permission Role Code in ' . $this->permissionRole->Title . " with Code = ${permissionRoleCode} (${permissionRoleCodeObjectCount})", 'deleted');
+                    } elseif ($permissionRoleCodeObjectCount === 1) {
+                        //do nothing
                     } else {
-                        DB::alteration_message('CHECKED ' . $permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group');
+                        $permissionRoleCodeObject = PermissionRoleCode::create();
+                        $permissionRoleCodeObject->Code = $permissionRoleCode;
+                        $permissionRoleCodeObject->RoleID = $this->permissionRole->ID;
                     }
-                } else {
-                    DB::alteration_message('ERROR: missing group or permissionRole', 'deleted');
+                    $this->showDebugMessage('adding ' . $permissionRoleCodeObject->Code . ' to ' . $this->permissionRole->Title);
+                    $permissionRoleCodeObject->write();
                 }
             }
         }
+
+    }
+
+
+    protected function addRoleToGroup()
+    {
+        if ($this->group && $this->permissionRole) {
+            $count = DB::query('SELECT COUNT(*) FROM Group_Roles WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' . $this->permissionRole->ID)->value();
+            $count = intval($count);
+            if ($count === 0) {
+                $this->showDebugMessage('ADDING ' . $this->permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group', 'created');
+                $existingGroups = $this->permissionRole->Groups();
+                $existingGroups->add($this->group);
+            } else {
+                $this->showDebugMessage('CHECKED ' . $this->permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group');
+            }
+        } else {
+            $this->showDebugMessage('ERROR: missing group or this->permissionRole', 'deleted');
+        }
+
     }
 
     protected function checkVariables()
     {
-        if ($this->member) {
+        if ($this->member && $this->member instanceof Member) {
             if (! $this->email) {
                 $this->email = $this->member->Email;
             }
@@ -444,17 +488,44 @@ class PermissionProviderFactory
             $this->surname = 'User';
         }
 
-        if (! $this->name) {
+        if (! $this->groupName) {
             $number = rand(0, 99999999);
-            $this->name = 'New Group ' . $number;
+            $this->groupName = 'New Group ' . $number;
         }
         if (! $this->code) {
-            $this->code = $this->name;
+            $this->createCodeFromName();
         }
+    }
+
+    protected function createCodeFromName()
+    {
+        $this->code = $this->groupName;
         $this->code = str_replace(' ', '_', $this->code);
         $this->code = preg_replace("/[\W_]+/u", '', $this->code);
         //changing to lower case seems to be very important
         //unidentified bug so far
         $this->code = strtolower($this->code);
+    }
+
+
+    protected function addPassword(bool $newMember)
+    {
+        if($newMember && ! $this->password) {
+            $this->addRandomPassword();
+        }
+        if($this->password) {
+            if ($newMember || $replaceExistingPassword) {
+                $this->member->changePassword($this->password);
+                $this->member->PasswordExpiry = date('Y-m-d');
+                $this->member->write();
+            }
+        }
+    }
+
+    protected function showDebugMessage($message, $style)
+    {
+        if($this->debug){
+            DB::alteration_message($message, $style);
+        }
     }
 }
