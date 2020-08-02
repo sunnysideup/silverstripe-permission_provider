@@ -3,6 +3,7 @@
 namespace Sunnysideup\PermissionProvider\Api;
 
 use SilverStripe\Control\Director;
+use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
@@ -14,6 +15,8 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
 use SilverStripe\Security\PermissionRoleCode;
+
+use SilverStripe\Control\Email\Email;
 
 class PermissionProviderFactory
 {
@@ -91,6 +94,16 @@ class PermissionProviderFactory
     protected $group = null;
 
     /**
+     * @var bool
+     */
+    protected $sendPasswordResetLink = true;
+
+    /**
+     * @var bool
+     */
+    protected $isNewMember = false;
+
+    /**
      * @var PermissionRole|null
      */
     protected $permissionRole = null;
@@ -129,6 +142,13 @@ class PermissionProviderFactory
     public function setPassword(string $password): PermissionProviderFactory
     {
         $this->password = $password;
+
+        return $this;
+    }
+
+    public function setSendEmailAboutPassword(bool $b): PermissionProviderFactory
+    {
+        $this->sendPasswordResetLink = $b;
 
         return $this;
     }
@@ -225,7 +245,7 @@ class PermissionProviderFactory
     {
         $this->checkVariables();
         $filter = ['Email' => $this->email];
-        $newMember = false;
+        $this->isNewMember = false;
 
         /** @var Member|null */
         $this->member = Member::get_one(
@@ -234,14 +254,14 @@ class PermissionProviderFactory
             $cacheDataObjectGetOne = false
         );
         if (! $this->member) {
-            $newMember = true;
+            $this->isNewMember = true;
             $this->member = Member::create($filter);
         }
 
         $this->member->FirstName = $this->firstName;
         $this->member->Surname = $this->surname;
         $this->member->write();
-        $this->updatePassword($newMember);
+        $this->updatePassword();
 
         /** @var Member */
         return $this->member;
@@ -510,17 +530,45 @@ class PermissionProviderFactory
         $this->code = strtolower($this->code);
     }
 
-    protected function updatePassword(bool $newMember)
+    protected function updatePassword()
     {
-        if ($newMember && ! $this->password) {
+        if ($this->isNewMember && ! $this->password) {
             $this->addRandomPassword();
         }
         if ($this->password) {
-            if ($newMember || $this->replaceExistingPassword) {
+            if ($this->isNewMember || $this->replaceExistingPassword) {
                 $this->member->changePassword($this->password);
                 $this->member->PasswordExpiry = date('Y-m-d');
                 $this->member->write();
+                if($this->sendPasswordResetLink) {
+                    $this->sendEmailToMember();
+                }
             }
+        }
+    }
+
+    protected function sendEmailToMember()
+    {
+        $link = Director::absoluteURL('Security/lostpassword');
+        $from = Config::inst()->get(Email::class, 'admin_email');
+        $email = Email::create()
+            ->setHTMLTemplate(self::class)
+            ->setData(
+                [
+                    'Firstname' => $this->firstName,
+                    'Surname' => $this->surname,
+                    'Link'=> $link,
+                    'IsNew'=> $this->isNewMember,
+                    'AbsoluteUrl'=> Director::absoluteURL('/'),
+                ]
+            )
+            ->setFrom($from)
+            ->setTo($this->Email)
+            ->setSubject($this->emailSubject);
+        if ($email->send()) {
+            //email sent successfully
+        } else {
+            // there may have been 1 or more failures
         }
     }
 
