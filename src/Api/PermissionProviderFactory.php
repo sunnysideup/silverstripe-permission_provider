@@ -3,6 +3,7 @@
 namespace Sunnysideup\PermissionProvider\Api;
 
 use SilverStripe\Control\Director;
+use SilverStripe\Control\Email\Email;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
@@ -10,13 +11,12 @@ use SilverStripe\Core\Injector\Injector;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Group;
-use SilverStripe\Security\Member;
 
+use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
-use SilverStripe\Security\PermissionRoleCode;
 
-use SilverStripe\Control\Email\Email;
+use SilverStripe\Security\PermissionRoleCode;
 
 class PermissionProviderFactory
 {
@@ -540,7 +540,7 @@ class PermissionProviderFactory
                 $this->member->changePassword($this->password);
                 $this->member->PasswordExpiry = date('Y-m-d');
                 $this->member->write();
-                if($this->sendPasswordResetLink) {
+                if ($this->sendPasswordResetLink) {
                     $this->sendEmailToMember();
                 }
             }
@@ -557,9 +557,9 @@ class PermissionProviderFactory
                 [
                     'Firstname' => $this->firstName,
                     'Surname' => $this->surname,
-                    'Link'=> $link,
-                    'IsNew'=> $this->isNewMember,
-                    'AbsoluteUrl'=> Director::absoluteURL('/'),
+                    'Link' => $link,
+                    'IsNew' => $this->isNewMember,
+                    'AbsoluteUrl' => Director::absoluteURL('/'),
                 ]
             )
             ->setFrom($from)
@@ -567,9 +567,8 @@ class PermissionProviderFactory
             ->setSubject($this->emailSubject);
         if ($email->send()) {
             //email sent successfully
-        } else {
-            // there may have been 1 or more failures
         }
+        // there may have been 1 or more failures
     }
 
     protected function showDebugMessage(string $message, $style = '')
