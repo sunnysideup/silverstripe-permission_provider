@@ -99,6 +99,16 @@ class PermissionProviderFactory
     protected $sendPasswordResetLink = true;
 
     /**
+     * @var string
+     */
+    protected $emailSubjectNew = 'your login details has been set up';
+
+    /**
+     * @var string
+     */
+    protected $emailSubjectExisting = 'your login details have been updated';
+
+    /**
      * @var bool
      */
     protected $isNewMember = false;
@@ -551,8 +561,9 @@ class PermissionProviderFactory
     {
         $link = Director::absoluteURL('Security/lostpassword');
         $from = Config::inst()->get(Email::class, 'admin_email');
+        $subject = $this->isNewMember ? $this->emailSubjectNew : $this->emailSubjectExisting;
         $email = Email::create()
-            ->setHTMLTemplate(self::class)
+            ->setHTMLTemplate(self::class.'UpdateEmail')
             ->setData(
                 [
                     'Firstname' => $this->firstName,
@@ -563,8 +574,8 @@ class PermissionProviderFactory
                 ]
             )
             ->setFrom($from)
-            ->setTo($this->Email)
-            ->setSubject($this->emailSubject);
+            ->setTo($this->email)
+            ->setSubject($subject);
         if ($email->send()) {
             //email sent successfully
         }
