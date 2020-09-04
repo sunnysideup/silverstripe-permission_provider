@@ -563,7 +563,7 @@ class PermissionProviderFactory
         $from = Config::inst()->get(Email::class, 'admin_email');
         $subject = $this->isNewMember ? $this->emailSubjectNew : $this->emailSubjectExisting;
         $email = Email::create()
-            ->setHTMLTemplate(self::class.'UpdateEmail')
+            ->setHTMLTemplate(self::class . 'UpdateEmail')
             ->setData(
                 [
                     'Firstname' => $this->firstName,
