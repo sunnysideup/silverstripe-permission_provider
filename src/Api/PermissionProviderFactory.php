@@ -197,7 +197,6 @@ class PermissionProviderFactory
 
     /**
      * @param string|Group $parentGroup
-     * @return PermissionProviderFactory
      */
     public function setParentGroup($parentGroup): PermissionProviderFactory
     {
@@ -248,8 +247,6 @@ class PermissionProviderFactory
 
     /**
      * Create a member
-     *
-     * @return Member
      */
     public function CreateDefaultMember(): Member
     {
@@ -257,7 +254,7 @@ class PermissionProviderFactory
         $filter = ['Email' => $this->email];
         $this->isNewMember = false;
 
-        /** @var Member|null */
+        /** @var Member|null $this */
         $this->member = Member::get_one(
             Member::class,
             $filter,
