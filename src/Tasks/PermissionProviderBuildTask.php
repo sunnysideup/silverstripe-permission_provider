@@ -23,7 +23,6 @@ class PermissionProviderBuildTask extends BuildTask
                     DB::alteration_message('Deleting double permission with code: ' . $permission->Code, 'deleted');
                     $permission->delete();
                 }
-                $this->_permissions[$permission->Code];
             }
         }
     }
