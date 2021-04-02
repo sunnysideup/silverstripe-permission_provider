@@ -20,25 +20,30 @@ use SilverStripe\Security\PermissionRoleCode;
 
 class PermissionProviderFactory
 {
+    use Injectable;
+    use Configurable;
+
     public $this;
+
     /**
      * @var \SilverStripe\ORM\DataList|mixed
      */
     public $groupDataList;
+
     /**
      * @var int|mixed
      */
     public $groupCount;
+
     /**
      * @var string|mixed
      */
     public $parentGroupName;
+
     /**
      * @var int|mixed
      */
     public $permissionCodeCount;
-    use Injectable;
-    use Configurable;
 
     /**
      * @var bool
@@ -547,7 +552,7 @@ class PermissionProviderFactory
     {
         $this->code = $this->groupName;
         $this->code = str_replace(' ', '_', $this->code);
-        $this->code = preg_replace("#[\\W_]+#u", '', $this->code);
+        $this->code = preg_replace('#[\\W_]+#u', '', $this->code);
         //changing to lower case seems to be very important
         //unidentified bug so far
         $this->code = strtolower($this->code);
