@@ -104,12 +104,12 @@ class PermissionProviderFactory
     protected $permissionArray = [];
 
     /**
-     * @var null|Member
+     * @var Member
      */
     protected $member;
 
     /**
-     * @var null|Group
+     * @var Group
      */
     protected $group;
 
@@ -134,7 +134,7 @@ class PermissionProviderFactory
     protected $isNewMember = false;
 
     /**
-     * @var null|PermissionRole
+     * @var PermissionRole
      */
     protected $permissionRole;
 
