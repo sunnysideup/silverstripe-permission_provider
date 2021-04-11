@@ -18,7 +18,7 @@ class PermissionProviderBuildTask extends BuildTask
     {
         $permissions = Permission::get();
         foreach ($permissions as $permission) {
-            if ($permission->Arg === 0 && $permission->Type === 1) {
+            if (0 === $permission->Arg && 1 === $permission->Type) {
                 if (isset($this->_permissions[$permission->Code])) {
                     DB::alteration_message('Deleting double permission with code: ' . $permission->Code, 'deleted');
                     $permission->delete();
