@@ -386,7 +386,7 @@ class PermissionProviderFactory
             ->filter(['Code' => $this->code])
             ->exclude(['ID' => $this->group->ID])
         ;
-        if (0 !== $doubleGroups->count()) {
+        if ($doubleGroups->exists()) {
             $this->showDebugMessage($doubleGroups->count() . ' groups with the same name', 'deleted');
             $realMembers = $this->group->Members();
             foreach ($doubleGroups as $doubleGroup) {
