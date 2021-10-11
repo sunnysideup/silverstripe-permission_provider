@@ -8,7 +8,7 @@ We use a Research Member as an example below:
 ```php
 $group = PermissionProviderFactory::inst()
     ->setEmail('a@b.com')
-    ->setFirstName('Tour')
+    ->setFirstName('Research')
     ->setSurname('Manager')
     ->setPassword('change-on-next-login-123')
     ->addRandomPassword()
@@ -28,7 +28,7 @@ OR
 ```php
 $member = PermissionProviderFactory::inst()
     ->setEmail('a@b.com')
-    ->setFirstName('Tour')
+    ->setFirstName('Research')
     ->setSurname('Manager')
     ->CreateDefaultMember();
 ```
