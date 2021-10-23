@@ -29,9 +29,9 @@ class PermissionProviderFactory
     public $groupDataList;
 
     /**
-     * @var int|mixed
+     * @var int
      */
-    public $groupCount;
+    public $groupCount = 0;
 
     /**
      * @var mixed|string
@@ -39,9 +39,9 @@ class PermissionProviderFactory
     public $parentGroupName;
 
     /**
-     * @var int|mixed
+     * @var int
      */
-    public $permissionCodeCount;
+    public $permissionCodeCount = 0;
 
     /**
      * @var bool
@@ -306,7 +306,7 @@ class PermissionProviderFactory
 
         $filterArrayForGroup = ['Code' => $this->code];
         $this->groupDataList = Group::get()->filter($filterArrayForGroup);
-        $this->groupCount = $this->groupDataList->count();
+        $this->groupCount = $this->groupDataList->limit(2)->count();
         $groupStyle = 'updated';
         if ($this->groupCount > 1) {
             user_error("There is more than one group with the {$this->groupName} ({$this->code}) Code", E_USER_ERROR);
