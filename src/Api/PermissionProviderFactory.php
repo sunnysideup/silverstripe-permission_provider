@@ -386,7 +386,7 @@ class PermissionProviderFactory
     protected function checkDoubleGroups(): void
     {
         $doubleGroups = Group::get()
-            ->filter(['Title' => $this->groupName, 'Code' => ['', strtolower($this->code)]])
+            ->filter(['Title' => $this->groupName, 'Code' => ['', strtolower($this->code), $this->code]])
             ->exclude(['ID' => $this->group->ID])
         ;
         if ($doubleGroups->exists()) {
