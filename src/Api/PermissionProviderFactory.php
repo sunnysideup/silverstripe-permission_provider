@@ -303,7 +303,9 @@ class PermissionProviderFactory
             $this->member = $member;
         }
         $this->checkVariables();
-
+        if(! $this->code) {
+            user_error('No group code set for the creation of group');
+        }
         $filterArrayForGroup = ['Code' => $this->code];
         $this->groupDataList = Group::get()->filter($filterArrayForGroup);
         $this->groupCount = $this->groupDataList->limit(2)->count();
@@ -319,6 +321,7 @@ class PermissionProviderFactory
         }
         $this->group->Locked = 1;
         $this->group->Title = $this->groupName;
+        $this->group->Code = strtolower($this->code);
 
         $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->code}) group", $groupStyle);
 
@@ -383,7 +386,7 @@ class PermissionProviderFactory
     protected function checkDoubleGroups(): void
     {
         $doubleGroups = Group::get()
-            ->filter(['Code' => $this->code])
+            ->filter(['Title' => $this->groupName, 'Code' => ['', strtolower($this->code)]])
             ->exclude(['ID' => $this->group->ID])
         ;
         if ($doubleGroups->exists()) {
