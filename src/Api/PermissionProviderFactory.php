@@ -46,7 +46,7 @@ class PermissionProviderFactory
     /**
      * @var bool
      */
-    protected $debug = false;
+    protected $debug = true;
 
     /**
      * @var string
@@ -204,7 +204,7 @@ class PermissionProviderFactory
 
     public function setCode(string $code): PermissionProviderFactory
     {
-        $this->code = $code;
+        $this->code = $this->codeToCleanCode($code);
 
         return $this;
     }
@@ -259,6 +259,7 @@ class PermissionProviderFactory
      */
     public function CreateGroupAndMember(): Group
     {
+        $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
         $this->checkVariables();
         $this->member = $this->CreateDefaultMember();
         $this->group = $this->CreateGroup($this->member);
@@ -271,6 +272,7 @@ class PermissionProviderFactory
      */
     public function CreateDefaultMember(): Member
     {
+        $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
         $this->checkVariables();
         $filter = ['Email' => $this->email];
         $this->isNewMember = false;
@@ -299,6 +301,7 @@ class PermissionProviderFactory
      */
     public function CreateGroup(?Member $member = null): Group
     {
+        $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
         if (null !== $member) {
             $this->member = $member;
         }
@@ -321,7 +324,7 @@ class PermissionProviderFactory
         }
         $this->group->Locked = 1;
         $this->group->Title = $this->groupName;
-        $this->group->Code = strtolower($this->code);
+        $this->group->setCode($this->code);
 
         $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->code}) group", $groupStyle);
 
@@ -386,7 +389,7 @@ class PermissionProviderFactory
     protected function checkDoubleGroups(): void
     {
         $doubleGroups = Group::get()
-            ->filter(['Title' => $this->groupName, 'Code' => ['', strtolower($this->code), $this->code]])
+            ->filter(['Title' => $this->groupName, 'Code' => ['', $this->code]])
             ->exclude(['ID' => $this->group->ID])
         ;
         if ($doubleGroups->exists()) {
@@ -398,14 +401,24 @@ class PermissionProviderFactory
                     $this->showDebugMessage('adding customers: ' . $fakeMember->Email, 'created');
                     $realMembers->add($fakeMember);
                 }
-                $this->showDebugMessage('deleting double group ', 'deleted');
+                $this->showDebugMessage('deleting double group with code: '.$doubleGroup->Code, 'deleted');
+                echo '999999999999999999999999999';
                 $doubleGroup->delete();
             }
         }
     }
 
+    protected function codeToCleanCode(string $code) :string
+    {
+        $group = Injector::inst()->get(Group::class);
+        $group->setCode($code);
+
+        return $group->Code;
+    }
+
     protected function grantPermissions()
     {
+        $this->showDebugMessage('=== grantPermissions ===');
         if ('' !== $this->permissionCode) {
             $this->permissionCodeCount = DB::query("SELECT * FROM \"Permission\" WHERE \"GroupID\" = '" . $this->group->ID . "' AND \"Code\" LIKE '" . $this->permissionCode . "'")->numRecords();
             if (0 === $this->permissionCodeCount) {
@@ -557,12 +570,12 @@ class PermissionProviderFactory
 
     protected function createCodeFromName()
     {
-        $this->code = $this->groupName;
-        $this->code = str_replace(' ', '_', $this->code);
-        $this->code = preg_replace('#[\\W_]+#u', '', $this->code);
+        $code = $this->groupName;
+        $code = str_replace(' ', '_', $code);
+        $code = preg_replace('#[\\W_]+#u', '', $code);
         //changing to lower case seems to be very important
         //unidentified bug so far
-        $this->code = strtolower($this->code);
+        $this->code = $this->codeToCleanCode($code);
     }
 
     protected function updatePassword()
