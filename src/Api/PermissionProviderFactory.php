@@ -314,7 +314,7 @@ class PermissionProviderFactory
         $this->groupCount = $this->groupDataList->limit(2)->count();
         $groupStyle = 'updated';
         if ($this->groupCount > 1) {
-            user_error("There is more than one group with the {$this->groupName} ({$this->code}) Code", E_USER_ERROR);
+            $this->showDebugMessage("There is more than one group with the {$this->groupName} ({$this->code}) Code");
         }
         if (0 === $this->groupCount) {
             $this->group = Group::create($filterArrayForGroup);
