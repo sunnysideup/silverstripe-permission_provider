@@ -1,0 +1,15 @@
+---
+name: PermissionProviderFrameworkHacks
+---
+
+SilverStripe\Security\Group:
+  indexes:
+    Code: true
+    Title: true
+    Sort: true
+SilverStripe\Security\Permission:
+  indexes:
+    Code: true
+SilverStripe\Security\PermissionRoleCode:
+  indexes:
+    Code: true
