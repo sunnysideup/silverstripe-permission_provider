@@ -2,14 +2,10 @@
 
 namespace Sunnysideup\PermissionProvider\Tasks;
 
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Permission;
-use SilverStripe\Security\PermissionProvider;
-
-use SilverStripe\Core\ClassInfo;
-
-use Sunnysideup\PermissionProvider\Api\PermissionProviderFactory;
 use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
 class PermissionProviderBuildTask extends BuildTask
@@ -29,10 +25,9 @@ class PermissionProviderBuildTask extends BuildTask
     protected function createDefaultPermissions()
     {
         $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
-        foreach($classNames as $className) {
+        foreach ($classNames as $className) {
             $className::permission_provider_factory_runner();
         }
-
     }
 
     protected function cleanUp()
@@ -47,5 +42,4 @@ class PermissionProviderBuildTask extends BuildTask
             }
         }
     }
-
 }

@@ -306,7 +306,7 @@ class PermissionProviderFactory
             $this->member = $member;
         }
         $this->checkVariables();
-        if(! $this->code) {
+        if (! $this->code) {
             user_error('No group code set for the creation of group');
         }
         $filterArrayForGroup = ['Code' => $this->code];
@@ -401,14 +401,14 @@ class PermissionProviderFactory
                     $this->showDebugMessage('adding customers: ' . $fakeMember->Email, 'created');
                     $realMembers->add($fakeMember);
                 }
-                $this->showDebugMessage('deleting double group with code: '.$doubleGroup->Code, 'deleted');
+                $this->showDebugMessage('deleting double group with code: ' . $doubleGroup->Code, 'deleted');
                 echo '999999999999999999999999999';
                 $doubleGroup->delete();
             }
         }
     }
 
-    protected function codeToCleanCode(string $code) :string
+    protected function codeToCleanCode(string $code): string
     {
         $group = Injector::inst()->get(Group::class);
         $group->setCode($code);
