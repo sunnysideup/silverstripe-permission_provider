@@ -402,7 +402,6 @@ class PermissionProviderFactory
                     $realMembers->add($fakeMember);
                 }
                 $this->showDebugMessage('deleting double group with code: ' . $doubleGroup->Code, 'deleted');
-                echo '999999999999999999999999999';
                 $doubleGroup->delete();
             }
         }
