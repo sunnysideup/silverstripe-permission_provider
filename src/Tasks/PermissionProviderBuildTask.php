@@ -20,6 +20,7 @@ class PermissionProviderBuildTask extends BuildTask
     {
         $this->cleanUp();
         $this->createDefaultPermissions();
+        $this->cleanUp();
     }
 
     protected function createDefaultPermissions()
