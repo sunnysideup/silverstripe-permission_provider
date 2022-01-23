@@ -1,6 +1,6 @@
 <?php
 
-namespace Sunnysideup\PermissionProvider\Extensions\GroupExtension;
+namespace Sunnysideup\PermissionProvider\Extensions;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
