@@ -513,9 +513,10 @@ class PermissionProviderFactory implements PermissionProvider
         foreach($this->mergeGroupCodes as $code) {
             $groupCodes[] = $code;
         }
+        $groupCodes = array_filter($groupCodes);
         $doubleGroups = Group::get()
             ->filter(['Code' => [$groupCodes]])
-            ->exclude(['ID' => $this->group->ID])
+            ->exclude(['ID' => (int) $this->group->ID])
         ;
         if ($doubleGroups->exists()) {
             $this->showDebugMessage($doubleGroups->count() . ' groups with the same name', 'deleted');
