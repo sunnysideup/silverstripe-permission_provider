@@ -7,16 +7,23 @@ We use a Research Member as an example below:
 
 ```php
 $group = PermissionProviderFactory::inst()
-    ->setEmail('a@b.com')
-    ->setFirstName('Research')
-    ->setSurname('Manager')
-    ->setPassword('change-on-next-login-123')
-    ->addRandomPassword()
-    ->setReplaceExistingPassword(false)
-    ->setGroupName('Research Managers')
-    ->setCode('research_managers')
-    ->setPermissionCode('CMS_ACCESS_RESEARCH_ADMIN')
-    ->setRoleTitle('Research Manager Privileges')
+    // required
+    ->setGroupName('Research Managers') // optional
+
+    // optionals
+    ->setEmail('a@b.com') // option
+    ->setFirstName('Research') // optional
+    ->setSurname('Manager') // optional
+    ->setPassword('change-on-next-login-123') // optional
+    ->addRandomPassword() // optional
+    ->setReplaceExistingPassword(false) // optional
+    ->setCode('research_managers') // optional
+    ->addMergeCode('research_managers_old') // optional
+    ->addMergeCodes(['research_managers_old_also', ]) // optional
+    ->setPermissionCode('CMS_ACCESS_RESEARCH_ADMIN') // optional
+    ->setRoleTitle('Research Manager Privileges') // optional
+    ->addRoleTitle('SomeOther Role') // optional
+    ->addRoleTitles(['Some Other Role Also',]) // optional
     ->setPermissionArray(['CMS_ACCESS_ResearchAdmin'])
     ->CreateGroupAndMember();
     // ->CreateDefaultMember();
@@ -27,9 +34,12 @@ OR
 
 ```php
 $member = PermissionProviderFactory::inst()
-    ->setEmail('a@b.com')
-    ->setFirstName('Research')
-    ->setSurname('Manager')
+    ->setGroupName('Research Managers') // required
+    ->setFirstName('Research') // optional
+    ->setSurname('Manager') // optional
+    ->setPassword('change-on-next-login-123') // optional
+    ->addRandomPassword() // optional
+    ->setReplaceExistingPassword(false) // optional    
     ->CreateDefaultMember();
 ```
 
@@ -46,7 +56,7 @@ OR
 ```php
 $member = Member::get_one();
 PermissionProviderFactory::inst()
-    ->setGroupName('Research Managers')
+    ->setGroupName('Research Managers') // required
     ->AddMemberToGroup($member);
 
 ```

@@ -1,6 +1,7 @@
 <?php
 
 namespace Sunnysideup\PermissionProvider\Api;
+use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
@@ -8,6 +9,8 @@ use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
+
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Group;
@@ -15,12 +18,35 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionRole;
 use SilverStripe\Security\PermissionRoleCode;
+use SilverStripe\Security\PermissionProvider;
 
-class PermissionProviderFactory
+class PermissionProviderFactory implements PermissionProvider
 {
     use Injectable;
     use Configurable;
 
+    public function providePermissions()
+    {
+        $permissions = [];
+        $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
+        foreach ($classNames as $className) {
+            $group = $className::permission_provider_factory_runner();
+            $parentGroup = $group->Parent();
+            if($parentGroup && $parentGroup->exists()) {
+                $category = 'OTHER';
+            } else {
+                $category = $parentGroup->Title;
+            }
+            $permissions[$group->MainPermissionCode] = [
+                'name' => $group->Title,
+                'category' => $category,
+                'help' => $group->Description,
+                'sort' => $group->Sort,
+            ];
+        }
+
+        return $permissions;
+    }
 
     /**
      * @var bool
@@ -127,6 +153,16 @@ class PermissionProviderFactory
      * @var bool
      */
     protected $isNewMember = false;
+
+    /**
+     * @var int
+     */
+    protected $sort = 0;
+
+    /**
+     * @var string
+     */
+    protected $description = '';
 
     private static $_instance;
 
@@ -263,7 +299,7 @@ class PermissionProviderFactory
 
     public function addMergeCodes(array $array): PermissionProviderFactory
     {
-        $this->mergeGroupCodes = $array;
+        $this->mergeGroupCodes = array_merge([$this->mergeGroupCodes], $array);
 
         return $this;
     }
@@ -273,6 +309,11 @@ class PermissionProviderFactory
         $this->permissionCode = $permissionCode;
 
         return $this;
+    }
+
+    public function getPermissionCode(string $permissionCode): string
+    {
+        return $this->permissionCode?: strtoupper('CMS_ACCESS_'.$this->getCode()) ;
     }
 
     public function setRoleTitle(string $roleTitle): PermissionProviderFactory
@@ -291,12 +332,12 @@ class PermissionProviderFactory
 
     public function addRoleTitles(array $array): PermissionProviderFactory
     {
-        $this->otherRoleTitles = $array;
+        $this->otherRoleTitles = array_merge([$this->otherRoleTitles], $array);
 
         return $this;
     }
 
-    public function getRoleTitle(string $roleTitle): string
+    public function getRoleTitle(): string
     {
         return $this->roleTitle?: $this->groupName . ' Role';
     }
@@ -311,6 +352,20 @@ class PermissionProviderFactory
     public function setMember(Member $member): PermissionProviderFactory
     {
         $this->member = $member;
+
+        return $this;
+    }
+
+    public function setDescription(string $string) : PermissionProviderFactory
+    {
+        $this->description = $string;
+
+        return $this;
+    }
+
+    public function setSort(int $int) : PermissionProviderFactory
+    {
+        $this->sort = $int;
 
         return $this;
     }
@@ -393,6 +448,9 @@ class PermissionProviderFactory
         }
         $this->group->Locked = 1;
         $this->group->Title = $this->groupName;
+        $this->group->Sort = $this->sort;
+        $this->group->Description = $this->description;
+
         $this->group->setCode($this->code);
 
         $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->code}) group", $groupStyle);
@@ -509,34 +567,34 @@ class PermissionProviderFactory
      */
     protected function addOrUpdateRole()
     {
-        if ('' !== $this->roleTitle) {
+        if ('' !== $this->getRoleTitle()) {
             $count = PermissionRole::get()
-                ->Filter(['Title' => $this->roleTitle])
+                ->Filter(['Title' => $this->getRoleTitle()])
                 ->Count()
             ;
             if ($count > 1) {
-                $this->showDebugMessage("There is more than one Permission Role with title {$this->roleTitle} ({$count})", 'deleted');
+                $this->showDebugMessage("There is more than one Permission Role with title {$this->getRoleTitle()} ({$count})", 'deleted');
                 $permissionRolesFirst = DataObject::get_one(
                     PermissionRole::class,
-                    ['Title' => $this->roleTitle],
+                    ['Title' => $this->getRoleTitle()],
                     $cacheDataObjectGetOne = false
                 );
                 $permissionRolesToDelete = PermissionRole::get()
-                    ->Filter(['Title' => $this->roleTitle])
+                    ->Filter(['Title' => $this->getRoleTitle()])
                     ->Exclude(['ID' => $permissionRolesFirst->ID])
                 ;
                 foreach ($permissionRolesToDelete as $permissionRoleToDelete) {
-                    $this->showDebugMessage("DELETING double permission role {$this->roleTitle}", 'deleted');
+                    $this->showDebugMessage("DELETING double permission role {$this->getRoleTitle()}", 'deleted');
                     $permissionRoleToDelete->delete();
                 }
             } elseif (1 === $count) {
                 //do nothing
-                $this->showDebugMessage("{$this->roleTitle} role in place");
+                $this->showDebugMessage("{$this->getRoleTitle()} role in place");
             } else {
-                $this->showDebugMessage("adding {$this->roleTitle} role", 'created');
+                $this->showDebugMessage("adding {$this->getRoleTitle()} role", 'created');
                 /** @var PermissionRole|null $this->permissionRole */
                 $this->permissionRole = PermissionRole::create();
-                $this->permissionRole->Title = $this->roleTitle;
+                $this->permissionRole->Title = $this->getRoleTitle();
                 $this->permissionRole->OnlyAdminCanApply = true;
                 $this->permissionRole->write();
             }
@@ -544,7 +602,7 @@ class PermissionProviderFactory
                 /** @var PermissionRole|null $this->permissionRole */
                 $this->permissionRole = DataObject::get_one(
                     PermissionRole::class,
-                    ['Title' => $this->roleTitle],
+                    ['Title' => $this->getRoleTitle()],
                     $cacheDataObjectGetOne = false
                 );
             }
@@ -639,6 +697,7 @@ class PermissionProviderFactory
             'email',
             'groupName',
             'permissionCode',
+            'roleTitle',
         ];
         foreach($requiredFields as $requiredField) {
             if(! $this->$requiredField) {
