@@ -515,7 +515,7 @@ class PermissionProviderFactory implements PermissionProvider
         }
         $groupCodes = array_filter($groupCodes);
         $doubleGroups = Group::get()
-            ->filter(['Code' => [$groupCodes]])
+            ->filter(['Code' => $groupCodes])
             ->exclude(['ID' => (int) $this->group->ID])
         ;
         if ($doubleGroups->exists()) {
