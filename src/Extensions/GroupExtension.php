@@ -32,4 +32,11 @@ class GroupExtension extends DataExtension
         $obj = PermissionProviderBuildTask::create();
         $obj->run(null);
     }
+
+    public function canEdit($member = null)
+    {
+        if($this->getOwner()->MainPermissionCode) {
+            return false;
+        }
+    }
 }

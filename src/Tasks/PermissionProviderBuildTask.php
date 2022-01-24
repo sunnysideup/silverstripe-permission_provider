@@ -8,6 +8,8 @@ use SilverStripe\ORM\DB;
 use SilverStripe\Security\Permission;
 use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
+use Sunnysideup\PermissionProvider\Api\PermissionProviderFactory;
+
 class PermissionProviderBuildTask extends BuildTask
 {
     protected $title = 'Create Default Permissions';
@@ -25,6 +27,7 @@ class PermissionProviderBuildTask extends BuildTask
 
     protected function createDefaultPermissions()
     {
+        PermissionProviderFactory::set_debug();
         $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
         foreach ($classNames as $className) {
             $className::permission_provider_factory_runner();

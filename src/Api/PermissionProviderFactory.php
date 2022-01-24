@@ -25,6 +25,11 @@ class PermissionProviderFactory implements PermissionProvider
     use Injectable;
     use Configurable;
 
+    public static function set_debug(bool $b = true)
+    {
+        self::$debug = $b;
+    }
+
     public function providePermissions()
     {
         $permissions = [];
@@ -51,7 +56,7 @@ class PermissionProviderFactory implements PermissionProvider
     /**
      * @var bool
      */
-    protected $debug = false;
+    protected static $debug = false;
 
     /**
      * @var string
@@ -184,7 +189,8 @@ class PermissionProviderFactory implements PermissionProvider
             $baseURL = str_replace('http://', '', $baseURL);
             $baseURL = trim($baseURL, '/');
             $baseURL = trim($baseURL, '/');
-            $before = $this->email ?: $this->getFirstName() . '.'. $this->getSurname();
+            $before = strtolower($this->email ?: $this->getFirstName() . '.'. $this->getSurname());
+            $before = strtolower(preg_replace('~[^\pL\pN]+~u', '-', $before));
             $this->email =  $before . '@' . $baseURL;
         }
         return (string) $this->email;
@@ -305,7 +311,7 @@ class PermissionProviderFactory implements PermissionProvider
         return $this;
     }
 
-    public function getPermissionCode(string $permissionCode): string
+    public function getPermissionCode(): string
     {
         return $this->permissionCode?: strtoupper('CMS_ACCESS_'.$this->getCode()) ;
     }
@@ -443,6 +449,7 @@ class PermissionProviderFactory implements PermissionProvider
         $this->group->Locked = 1;
         $this->group->Title = $this->groupName;
         $this->group->Sort = $this->sort;
+        $this->group->MainPermissionCode = $this->getPermissionCode();
         $this->group->Description = $this->description;
 
         $this->group->setCode($this->getCode());
@@ -465,7 +472,7 @@ class PermissionProviderFactory implements PermissionProvider
         $this->checkVariables();
         if ($member instanceof Member) {
             $this->member = $member;
-            $this->showDebugMessage(' adding this->member ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
+            $this->showDebugMessage(' adding: ' . $this->member->Email . ' to group ' . $this->group->Title, 'created');
             $this->member->Groups()->add($this->group);
         } else {
             $this->showDebugMessage('No user provided.');
@@ -541,20 +548,20 @@ class PermissionProviderFactory implements PermissionProvider
     protected function grantPermissions()
     {
         $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
-        if ('' !== $this->permissionCode) {
+        if ('' !== $this->getPermissionCode()) {
             $permissionCodeCount = (int) DB::query(
                 "SELECT COUNT(*)
                 FROM \"Permission\"
-                WHERE \"GroupID\" = '" . $this->group->ID . "' AND \"Code\" LIKE '" . $this->permissionCode . "'"
+                WHERE \"GroupID\" = '" . $this->group->ID . "' AND \"Code\" LIKE '" . $this->getPermissionCode() . "'"
             )->value();
             if (0 === $permissionCodeCount) {
-                $this->showDebugMessage('granting ' . $this->groupName . " permission code {$this->permissionCode} ", 'created');
-                Permission::grant($this->group->ID, $this->permissionCode);
+                $this->showDebugMessage('granting ' . $this->groupName . " permission code {$this->getPermissionCode()} ", 'created');
+                Permission::grant($this->group->ID, $this->getPermissionCode());
             } else {
-                $this->showDebugMessage($this->groupName . " permission code {$this->permissionCode} already granted");
+                $this->showDebugMessage($this->groupName . " permission code {$this->getPermissionCode()} already granted");
             }
         }
-        $this->permissionArray[] = $this->permissionCode;
+        $this->permissionArray[] = $this->getPermissionCode();
     }
 
     /**
@@ -744,8 +751,8 @@ class PermissionProviderFactory implements PermissionProvider
             ->setHTMLTemplate(self::class . 'UpdateEmail')
             ->setData(
                 [
-                    'Firstname' => $this->firstName,
-                    'Surname' => $this->surname,
+                    'Firstname' => $this->getFirstName(),
+                    'Surname' => $this->getSurname(),
                     'Link' => $link,
                     'IsNew' => $this->isNewMember,
                     'AbsoluteUrl' => Director::absoluteURL('/'),
@@ -763,7 +770,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected function showDebugMessage(string $message, $style = '')
     {
-        if ($this->debug) {
+        if (self::$debug) {
             DB::alteration_message($message, $style);
         }
     }
