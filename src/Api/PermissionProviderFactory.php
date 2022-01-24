@@ -451,7 +451,7 @@ class PermissionProviderFactory implements PermissionProvider
 
         $this->addOrUpdateParentGroup();
         $this->checkDoubleGroups();
-        $this->addMemberToGroup();
+        $this->AddMemberToGroup($this->member);
         $this->grantPermissions();
         $this->addOrUpdateRole();
         $this->addPermissionsToRole();
