@@ -33,9 +33,9 @@ class PermissionProviderFactory implements PermissionProvider
             $group = $className::permission_provider_factory_runner();
             $parentGroup = $group->Parent();
             if($parentGroup && $parentGroup->exists()) {
-                $category = 'OTHER';
-            } else {
                 $category = $parentGroup->Title;
+            } else {
+                $category = 'OTHER';
             }
             $permissions[$group->MainPermissionCode] = [
                 'name' => $group->Title,
@@ -51,7 +51,7 @@ class PermissionProviderFactory implements PermissionProvider
     /**
      * @var bool
      */
-    protected $debug = true;
+    protected $debug = false;
 
     /**
      * @var string
@@ -164,15 +164,9 @@ class PermissionProviderFactory implements PermissionProvider
      */
     protected $description = '';
 
-    private static $_instance;
-
     public static function inst()
     {
-        if (null === self::$_instance) {
-            self::$_instance = Injector::inst()->get(PermissionProviderFactory::class);
-        }
-
-        return self::$_instance;
+        return new PermissionProviderFactory();
     }
 
     public function setEmail(string $email): PermissionProviderFactory
@@ -428,15 +422,15 @@ class PermissionProviderFactory implements PermissionProvider
         if (null !== $member) {
             $this->member = $member;
         }
-        if (! $this->code) {
+        if (! $this->getCode()) {
             user_error('No group code set for the creation of group');
         }
-        $filterArrayForGroup = ['Code' => $this->code];
+        $filterArrayForGroup = ['Code' => $this->getCode()];
         $groupDataList = Group::get()->filter($filterArrayForGroup);
         $groupCount = $groupDataList->limit(2)->count();
         $groupStyle = 'updated';
         if ($groupCount > 1) {
-            $this->showDebugMessage("There is more than one group with the {$this->code} Code");
+            $this->showDebugMessage("There is more than one group with the {$this->getCode()} Code");
         }
         if (0 === $groupCount) {
             /** @var Group|null $this->group */
@@ -451,9 +445,9 @@ class PermissionProviderFactory implements PermissionProvider
         $this->group->Sort = $this->sort;
         $this->group->Description = $this->description;
 
-        $this->group->setCode($this->code);
+        $this->group->setCode($this->getCode());
 
-        $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->code}) group", $groupStyle);
+        $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->getCode()}) group", $groupStyle);
 
         $this->addOrUpdateParentGroup();
         $this->checkDoubleGroups();
@@ -509,7 +503,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected function checkDoubleGroups(): void
     {
-        $groupCodes = [$this->code];
+        $groupCodes = [$this->getCode()];
         foreach($this->mergeGroupCodes as $code) {
             $groupCodes[] = $code;
         }
@@ -695,10 +689,8 @@ class PermissionProviderFactory implements PermissionProvider
     {
         $this->copyFromMember();
         $requiredFields = [
-            'email',
             'groupName',
             'permissionCode',
-            'roleTitle',
         ];
         foreach($requiredFields as $requiredField) {
             if(! $this->$requiredField) {
