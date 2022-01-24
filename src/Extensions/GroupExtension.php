@@ -5,7 +5,6 @@ namespace Sunnysideup\PermissionProvider\Extensions;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
-
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
 
 class GroupExtension extends DataExtension
@@ -33,11 +32,12 @@ class GroupExtension extends DataExtension
         $obj->run(null);
     }
 
-    public function createdThroughFactory() : bool
+    public function createdThroughFactory(): bool
     {
-        if($this->getOwner()->MainPermissionCode) {
+        if ($this->getOwner()->MainPermissionCode) {
             return true;
         }
+
         return false;
     }
 }

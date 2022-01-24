@@ -6,9 +6,8 @@ use SilverStripe\Core\ClassInfo;
 use SilverStripe\Dev\BuildTask;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Permission;
-use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
-
 use Sunnysideup\PermissionProvider\Api\PermissionProviderFactory;
+use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
 class PermissionProviderBuildTask extends BuildTask
 {

@@ -1,57 +1,28 @@
 <?php
 
 namespace Sunnysideup\PermissionProvider\Api;
-use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
+use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
 use SilverStripe\Core\Injector\Injector;
-
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\ORM\DataObject;
 use SilverStripe\ORM\DB;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
+use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Security\PermissionRole;
 use SilverStripe\Security\PermissionRoleCode;
-use SilverStripe\Security\PermissionProvider;
+use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
 class PermissionProviderFactory implements PermissionProvider
 {
     use Injectable;
     use Configurable;
-
-    public static function set_debug(bool $b = true)
-    {
-        self::$debug = $b;
-    }
-
-    public function providePermissions()
-    {
-        $permissions = [];
-        $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
-        foreach ($classNames as $className) {
-            $group = $className::permission_provider_factory_runner();
-            $parentGroup = $group->Parent();
-            if($parentGroup && $parentGroup->exists()) {
-                $category = $parentGroup->Title;
-            } else {
-                $category = 'OTHER';
-            }
-            $permissions[$group->MainPermissionCode] = [
-                'name' => $group->Title,
-                'category' => $category,
-                'help' => $group->Description,
-                'sort' => $group->Sort,
-            ];
-        }
-
-        return $permissions;
-    }
 
     /**
      * @var bool
@@ -99,7 +70,8 @@ class PermissionProviderFactory implements PermissionProvider
     protected $parentGroup;
 
     /**
-     * other group codes you are keen to merge
+     * other group codes you are keen to merge.
+     *
      * @var array
      */
     protected $mergeGroupCodes = [];
@@ -169,6 +141,34 @@ class PermissionProviderFactory implements PermissionProvider
      */
     protected $description = '';
 
+    public static function set_debug(bool $b = true)
+    {
+        self::$debug = $b;
+    }
+
+    public function providePermissions()
+    {
+        $permissions = [];
+        $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
+        foreach ($classNames as $className) {
+            $group = $className::permission_provider_factory_runner();
+            $parentGroup = $group->Parent();
+            if ($parentGroup && $parentGroup->exists()) {
+                $category = $parentGroup->Title;
+            } else {
+                $category = 'OTHER';
+            }
+            $permissions[$group->MainPermissionCode] = [
+                'name' => $group->Title,
+                'category' => $category,
+                'help' => $group->Description,
+                'sort' => $group->Sort,
+            ];
+        }
+
+        return $permissions;
+    }
+
     public static function inst()
     {
         return new PermissionProviderFactory();
@@ -181,18 +181,19 @@ class PermissionProviderFactory implements PermissionProvider
         return $this;
     }
 
-    public function getEmail() : string
+    public function getEmail(): string
     {
-        if(! $this->isEmail($this->email)) {
+        if (! $this->isEmail($this->email)) {
             $baseURL = Director::absoluteBaseURL();
             $baseURL = str_replace('https://', '', $baseURL);
             $baseURL = str_replace('http://', '', $baseURL);
             $baseURL = trim($baseURL, '/');
             $baseURL = trim($baseURL, '/');
-            $before = strtolower($this->email ?: $this->getFirstName() . '.'. $this->getSurname());
+            $before = strtolower($this->email ?: $this->getFirstName() . '.' . $this->getSurname());
             $before = strtolower(preg_replace('~[^\pL\pN]+~u', '-', $before));
-            $this->email =  $before . '@' . $baseURL;
+            $this->email = $before . '@' . $baseURL;
         }
+
         return (string) $this->email;
     }
 
@@ -205,7 +206,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     public function getFirstName(): string
     {
-        return $this->firstName?:'Editor';
+        return $this->firstName ?: 'Editor';
     }
 
     public function setSurname(string $surname): PermissionProviderFactory
@@ -217,7 +218,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     public function getSurname(): string
     {
-        return $this->surname?:$this->groupName;
+        return $this->surname ?: $this->groupName;
     }
 
     public function setPassword(string $password): PermissionProviderFactory
@@ -259,9 +260,9 @@ class PermissionProviderFactory implements PermissionProvider
         return $this;
     }
 
-    public function getCode() : string
+    public function getCode(): string
     {
-        if(! $this->code) {
+        if (! $this->code) {
             $code = $this->groupName;
             $code = str_replace(' ', '_', $code);
             $code = preg_replace('#[\\W_]+#u', '', $code);
@@ -269,9 +270,9 @@ class PermissionProviderFactory implements PermissionProvider
             //unidentified bug so far
             $this->code = $this->codeToCleanCode($code);
         }
+
         return $this->code;
     }
-
 
     public function setGroupName(string $groupName): PermissionProviderFactory
     {
@@ -313,7 +314,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     public function getPermissionCode(): string
     {
-        return $this->permissionCode?: strtoupper('CMS_ACCESS_'.$this->getCode()) ;
+        return $this->permissionCode ?: strtoupper('CMS_ACCESS_' . $this->getCode());
     }
 
     public function setRoleTitle(string $roleTitle): PermissionProviderFactory
@@ -339,7 +340,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     public function getRoleTitle(): string
     {
-        return $this->roleTitle?: $this->groupName . ' Role';
+        return $this->roleTitle ?: $this->groupName . ' Role';
     }
 
     public function setPermissionArray(array $permissionArray): PermissionProviderFactory
@@ -356,14 +357,14 @@ class PermissionProviderFactory implements PermissionProvider
         return $this;
     }
 
-    public function setDescription(string $string) : PermissionProviderFactory
+    public function setDescription(string $string): PermissionProviderFactory
     {
         $this->description = $string;
 
         return $this;
     }
 
-    public function setSort(int $int) : PermissionProviderFactory
+    public function setSort(int $int): PermissionProviderFactory
     {
         $this->sort = $int;
 
@@ -393,7 +394,7 @@ class PermissionProviderFactory implements PermissionProvider
         $filter = ['Email' => $this->getEmail()];
         $this->isNewMember = false;
 
-        /** @var Member|null $this->member */
+        // @var Member|null $this->member
         $this->member = Member::get_one(
             Member::class,
             $filter,
@@ -401,7 +402,7 @@ class PermissionProviderFactory implements PermissionProvider
         );
         if (! $this->member) {
             $this->isNewMember = true;
-            /** @var Member|null $this->member */
+            // @var Member|null $this->member
             $this->member = Member::create($filter);
         }
 
@@ -411,11 +412,6 @@ class PermissionProviderFactory implements PermissionProvider
         $this->updatePassword();
 
         return $this->member;
-    }
-
-    protected function isEmail(string $email) : bool
-    {
-        return (bool) filter_var($email, FILTER_VALIDATE_EMAIL);
     }
 
     /**
@@ -439,11 +435,11 @@ class PermissionProviderFactory implements PermissionProvider
             $this->showDebugMessage("There is more than one group with the {$this->getCode()} Code");
         }
         if (0 === $groupCount) {
-            /** @var Group|null $this->group */
+            // @var Group|null $this->group
             $this->group = Group::create($filterArrayForGroup);
             $groupStyle = 'created';
         } else {
-            /** @var Group|null $this->group */
+            // @var Group|null $this->group
             $this->group = $groupDataList->First();
         }
         $this->group->Locked = 1;
@@ -481,6 +477,11 @@ class PermissionProviderFactory implements PermissionProvider
         return $this;
     }
 
+    protected function isEmail(string $email): bool
+    {
+        return (bool) filter_var($email, FILTER_VALIDATE_EMAIL);
+    }
+
     protected function addOrUpdateParentGroup()
     {
         $parentGroupStyle = 'updated';
@@ -511,7 +512,7 @@ class PermissionProviderFactory implements PermissionProvider
     protected function checkDoubleGroups(): void
     {
         $groupCodes = [$this->getCode()];
-        foreach($this->mergeGroupCodes as $code) {
+        foreach ($this->mergeGroupCodes as $code) {
             $groupCodes[] = $code;
         }
         $groupCodes = array_filter($groupCodes);
@@ -543,7 +544,7 @@ class PermissionProviderFactory implements PermissionProvider
     }
 
     /**
-     * add permission codes to group
+     * add permission codes to group.
      */
     protected function grantPermissions()
     {
@@ -565,7 +566,7 @@ class PermissionProviderFactory implements PermissionProvider
     }
 
     /**
-     * create / update PermissionRole (role)
+     * create / update PermissionRole (role).
      */
     protected function addOrUpdateRole()
     {
@@ -594,14 +595,14 @@ class PermissionProviderFactory implements PermissionProvider
                 $this->showDebugMessage("{$this->getRoleTitle()} role in place");
             } else {
                 $this->showDebugMessage("adding {$this->getRoleTitle()} role", 'created');
-                /** @var PermissionRole|null $this->permissionRole */
+                // @var PermissionRole|null $this->permissionRole
                 $this->permissionRole = PermissionRole::create();
                 $this->permissionRole->Title = $this->getRoleTitle();
                 $this->permissionRole->OnlyAdminCanApply = true;
                 $this->permissionRole->write();
             }
-            if(! $this->permissionRole instanceof PermissionRole) {
-                /** @var PermissionRole|null $this->permissionRole */
+            if (! $this->permissionRole instanceof PermissionRole) {
+                // @var PermissionRole|null $this->permissionRole
                 $this->permissionRole = DataObject::get_one(
                     PermissionRole::class,
                     ['Title' => $this->getRoleTitle()],
@@ -612,7 +613,7 @@ class PermissionProviderFactory implements PermissionProvider
     }
 
     /**
-     * add permission codes (PermissionRoleCode) to rol
+     * add permission codes (PermissionRoleCode) to rol.
      */
     protected function addPermissionsToRole()
     {
@@ -662,7 +663,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected function addOtherRolesToGroup()
     {
-        foreach($this->otherRoleTitles as $roleObjectTitle) {
+        foreach ($this->otherRoleTitles as $roleObjectTitle) {
             $roleObject = DataObject::get_one(
                 PermissionRole::class,
                 ['Title' => $roleObjectTitle],
@@ -699,9 +700,9 @@ class PermissionProviderFactory implements PermissionProvider
             'groupName',
             'permissionCode',
         ];
-        foreach($requiredFields as $requiredField) {
-            if(! $this->$requiredField) {
-                user_error('Please provide '.$requiredField);
+        foreach ($requiredFields as $requiredField) {
+            if (! $this->{$requiredField}) {
+                user_error('Please provide ' . $requiredField);
             }
         }
         if ('' === $this->groupName) {
