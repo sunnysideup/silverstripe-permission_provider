@@ -33,10 +33,11 @@ class GroupExtension extends DataExtension
         $obj->run(null);
     }
 
-    public function canEdit($member = null)
+    public function createdThroughFactory() : bool
     {
         if($this->getOwner()->MainPermissionCode) {
-            return false;
+            return true;
         }
+        return false;
     }
 }
