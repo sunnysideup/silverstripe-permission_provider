@@ -427,8 +427,8 @@ class PermissionProviderFactory implements PermissionProvider
         if (! $this->getCode()) {
             user_error('No group code set for the creation of group');
         }
-        $filterArrayForGroup = ['Code' => $this->getCode()];
-        $groupDataList = Group::get()->filter($filterArrayForGroup);
+        $filterAnyArrayForGroup = ['Code' => $this->getCode(), 'Title' => $this->groupName];
+        $groupDataList = Group::get()->filterAny($filterAnyArrayForGroup);
         $groupCount = $groupDataList->limit(2)->count();
         $groupStyle = 'updated';
         if ($groupCount > 1) {
@@ -436,7 +436,7 @@ class PermissionProviderFactory implements PermissionProvider
         }
         if (0 === $groupCount) {
             // @var Group|null $this->group
-            $this->group = Group::create($filterArrayForGroup);
+            $this->group = Group::create($filterAnyArrayForGroup);
             $groupStyle = 'created';
         } else {
             // @var Group|null $this->group
