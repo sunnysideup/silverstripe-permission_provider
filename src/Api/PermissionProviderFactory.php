@@ -433,6 +433,7 @@ class PermissionProviderFactory implements PermissionProvider
         $groupStyle = 'updated';
         if ($groupCount > 1) {
             $this->showDebugMessage("There is more than one group with the {$this->getCode()} Code");
+            $this->checkDoubleGroups();
         }
         if (0 === $groupCount) {
             // @var Group|null $this->group
@@ -447,13 +448,12 @@ class PermissionProviderFactory implements PermissionProvider
         $this->group->Sort = $this->sort;
         $this->group->MainPermissionCode = $this->getPermissionCode();
         $this->group->Description = $this->description;
-
         $this->group->setCode($this->getCode());
+        $this->group->write();
 
         $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->getCode()}) group", $groupStyle);
 
         $this->addOrUpdateParentGroup();
-        $this->checkDoubleGroups();
         $this->AddMemberToGroup($this->member);
         $this->grantPermissions();
         $this->addOrUpdateRole();
