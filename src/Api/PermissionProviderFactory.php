@@ -148,7 +148,6 @@ class PermissionProviderFactory implements PermissionProvider
 
     public function providePermissions()
     {
-        return;
         $permissions = [];
         $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
         foreach ($classNames as $className) {
