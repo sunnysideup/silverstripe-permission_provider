@@ -148,6 +148,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     public function providePermissions()
     {
+        return;
         $permissions = [];
         $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
         foreach ($classNames as $className) {
@@ -433,7 +434,6 @@ class PermissionProviderFactory implements PermissionProvider
         $groupStyle = 'updated';
         if ($groupCount > 1) {
             $this->showDebugMessage("There is more than one group with the {$this->getCode()} Code");
-            $this->checkDoubleGroups();
         }
         if (0 === $groupCount) {
             // @var Group|null $this->group

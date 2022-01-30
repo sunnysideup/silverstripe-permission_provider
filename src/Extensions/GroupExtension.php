@@ -3,6 +3,7 @@
 namespace Sunnysideup\PermissionProvider\Extensions;
 
 use SilverStripe\Forms\FieldList;
+use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
@@ -20,6 +21,7 @@ class GroupExtension extends DataExtension
             'Root.Permissions',
             [
                 ReadonlyField::create('MainPermissionCode', 'Main Permission Code'),
+                TextField::create('Code', 'Code'),
             ]
         );
 
