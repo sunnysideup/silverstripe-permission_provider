@@ -437,17 +437,23 @@ class PermissionProviderFactory implements PermissionProvider
         if (0 === $groupCount) {
             // @var Group|null $this->group
             $this->group = Group::create($filterAnyArrayForGroup);
+            $this->group->write();
             $groupStyle = 'created';
         } else {
             // @var Group|null $this->group
             $this->group = $groupDataList->First();
         }
+
+
         $this->group->Locked = 1;
         $this->group->Title = $this->groupName;
         $this->group->Sort = $this->sort;
         $this->group->MainPermissionCode = $this->getPermissionCode();
         $this->group->Description = $this->description;
         $this->group->setCode($this->getCode());
+
+        // remove the other ones before we save ...
+        $this->checkDoubleGroups();
         $this->group->write();
 
         $this->showDebugMessage("{$groupStyle} {$this->groupName} ({$this->getCode()}) group", $groupStyle);
