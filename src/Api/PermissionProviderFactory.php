@@ -263,12 +263,12 @@ class PermissionProviderFactory implements PermissionProvider
     public function getCode(): string
     {
         if (! $this->code) {
-            $code = $this->groupName;
-            $code = str_replace(' ', '_', $code);
-            $code = preg_replace('#[\\W_]+#u', '', $code);
+            $this->code = $this->groupName;
+            $this->code = str_replace(' ', '_', $this->code);
+            $this->code = preg_replace('#[\\W_]+#u', '', $this->code);
             //changing to lower case seems to be very important
             //unidentified bug so far
-            $this->code = $this->codeToCleanCode($code);
+            $this->code = $this->codeToCleanCode($this->code);
         }
 
         return $this->code;
@@ -494,17 +494,17 @@ class PermissionProviderFactory implements PermissionProvider
             $this->showDebugMessage('adding parent group');
             if (is_string($this->parentGroup)) {
                 $parentGroupName = $this->parentGroup;
-                $this->parentGroup = DataObject::get_one(
-                    Group::class,
-                    ['Title' => $parentGroupName],
-                    $cacheDataObjectGetOne = false
-                );
-                if (null === $this->parentGroup) {
-                    $this->parentGroup = Group::create();
-                    $parentGroupStyle = 'created';
-                    $this->parentGroup->Title = $parentGroupName;
-                    $this->parentGroup->write();
-                    $this->showDebugMessage("{$parentGroupStyle} {$parentGroupName}");
+                if($parentGroupName) {
+                    $code = $this->codeToCleanCode($parentGroupName);
+                    $filter = ['Title' => $parentGroupName, 'Code' => $code];
+                    $this->parentGroup = Group::get()->filterAny($filter)->first();
+                    if (null === $this->parentGroup) {
+                        $this->parentGroup = Group::create($filter);
+                        $parentGroupStyle = 'created';
+                        $this->parentGroup->Title = $parentGroupName;
+                        $this->parentGroup->write();
+                        $this->showDebugMessage("{$parentGroupStyle} {$parentGroupName}");
+                    }
                 }
             }
             if ($this->parentGroup instanceof Group) {
