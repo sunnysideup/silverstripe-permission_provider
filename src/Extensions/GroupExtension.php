@@ -3,8 +3,8 @@
 namespace Sunnysideup\PermissionProvider\Extensions;
 
 use SilverStripe\Forms\FieldList;
-use SilverStripe\Forms\TextField;
 use SilverStripe\Forms\ReadonlyField;
+use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
 
@@ -36,10 +36,6 @@ class GroupExtension extends DataExtension
 
     public function createdThroughFactory(): bool
     {
-        if ($this->getOwner()->MainPermissionCode) {
-            return true;
-        }
-
-        return false;
+        return (bool) $this->getOwner()->MainPermissionCode;
     }
 }
