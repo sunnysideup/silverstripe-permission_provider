@@ -18,10 +18,16 @@ class GroupExtension extends DataExtension
     {
         $fields->removeByName(['MainPermissionCode']);
         $fields->addFieldsToTab(
+            'Root.Members',
+            [
+                ReadonlyField::create('Code', 'Code'),
+            ],
+            'Description'
+        );
+        $fields->addFieldsToTab(
             'Root.Permissions',
             [
                 ReadonlyField::create('MainPermissionCode', 'Main Permission Code'),
-                TextField::create('Code', 'Code'),
             ]
         );
 
