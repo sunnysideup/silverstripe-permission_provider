@@ -4,7 +4,6 @@ namespace Sunnysideup\PermissionProvider\Extensions;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
 
