@@ -535,7 +535,7 @@ class PermissionProviderFactory implements PermissionProvider
                     $wrongGroupMemberIds = $doubleGroup->Members()->columnUnique();
                     $this->showDebugMessage('adding members to right group ' . print_r($wrongGroupMemberIds), 'created');
                     $realMembers->addMany($wrongGroupMemberIds);
-
+                    $doubleGroup->Members()->removeAll();
                     $this->showDebugMessage('deleting double group with code: ' . $doubleGroup->Code, 'deleted');
                     $doubleGroup->delete();
                 }
