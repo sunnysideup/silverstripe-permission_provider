@@ -514,6 +514,7 @@ class PermissionProviderFactory implements PermissionProvider
         }
     }
 
+
     protected function checkDoubleGroups(): void
     {
         $groupCodes = [$this->getCode()];
@@ -522,25 +523,26 @@ class PermissionProviderFactory implements PermissionProvider
         }
 
         $groupCodes = array_filter($groupCodes);
-        $doubleGroups = Group::get()
-            ->filterAny(['Code' => $groupCodes, 'Title' => $this->groupName])
-            ->exclude(['ID' => (int) $this->group->ID])
-        ;
-        if ($doubleGroups->exists()) {
-            $this->showDebugMessage($doubleGroups->count() . ' groups with the same name', 'deleted');
-            $realMembers = $this->group->Members();
-            foreach ($doubleGroups as $doubleGroup) {
-                $fakeMembers = $doubleGroup->Members();
-                foreach ($fakeMembers as $fakeMember) {
-                    $this->showDebugMessage('adding customers: ' . $fakeMember->Email, 'created');
-                    $realMembers->add($fakeMember);
-                }
+        if(!empty($groupCodes) && $this->group && $this->group->ID) {
+            $doubleGroups = Group::get()
+                ->filter(['Code' => $groupCodes])
+                ->exclude(['ID' => (int) $this->group->ID])
+            ;
+            if ($doubleGroups->exists()) {
+                $this->showDebugMessage($doubleGroups->count() . ' groups with the same name', 'deleted');
+                $realMembers = $this->group->Members();
+                foreach ($doubleGroups as $doubleGroup) {
+                    $wrongGroupMemberIds = $doubleGroup->Members()->columnUnique();
+                    $this->showDebugMessage('adding members to right group ' . print_r($wrongGroupMemberIds), 'created');
+                    $realMembers->addMany($wrongGroupMemberIds);
 
-                $this->showDebugMessage('deleting double group with code: ' . $doubleGroup->Code, 'deleted');
-                $doubleGroup->delete();
+                    $this->showDebugMessage('deleting double group with code: ' . $doubleGroup->Code, 'deleted');
+                    $doubleGroup->delete();
+                }
             }
         }
     }
+
 
     protected function codeToCleanCode(string $code): string
     {
