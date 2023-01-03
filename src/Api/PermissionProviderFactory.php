@@ -514,7 +514,6 @@ class PermissionProviderFactory implements PermissionProvider
         }
     }
 
-
     protected function checkDoubleGroups(): void
     {
         $groupCodes = [$this->getCode()];
@@ -523,7 +522,7 @@ class PermissionProviderFactory implements PermissionProvider
         }
 
         $groupCodes = array_filter($groupCodes);
-        if(!empty($groupCodes) && $this->group && $this->group->ID) {
+        if (! empty($groupCodes) && $this->group && $this->group->ID) {
             $doubleGroups = Group::get()
                 ->filter(['Code' => $groupCodes])
                 ->exclude(['ID' => (int) $this->group->ID])
@@ -542,7 +541,6 @@ class PermissionProviderFactory implements PermissionProvider
             }
         }
     }
-
 
     protected function codeToCleanCode(string $code): string
     {
