@@ -97,17 +97,17 @@ class PermissionProviderFactory implements PermissionProvider
     protected $permissionArray = [];
 
     /**
-     * @var Member
+     * @var Member|null
      */
     protected $member;
 
     /**
-     * @var Group
+     * @var Group|null
      */
     protected $group;
 
     /**
-     * @var PermissionRole
+     * @var PermissionRole|null
      */
     protected $permissionRole;
 
@@ -391,7 +391,7 @@ class PermissionProviderFactory implements PermissionProvider
         $filter = ['Email' => $this->getEmail()];
         $this->isNewMember = false;
 
-        // @var Member|null $this->member
+        /** @property Member|null $member */
         $this->member = Member::get_one(
             Member::class,
             $filter,
@@ -399,7 +399,7 @@ class PermissionProviderFactory implements PermissionProvider
         );
         if (! $this->member) {
             $this->isNewMember = true;
-            // @var Member|null $this->member
+            /** @property Member|null $member */
             $this->member = Member::create($filter);
         }
 
