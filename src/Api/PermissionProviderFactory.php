@@ -261,7 +261,7 @@ class PermissionProviderFactory implements PermissionProvider
     {
         if (! $this->code) {
             $this->code = $this->groupName;
-            $this->code = str_replace(' ', \_::class, $this->code);
+            $this->code = str_replace(' ', '_', $this->code);
             $this->code = preg_replace('#[\\W_]+#u', '', $this->code);
             //changing to lower case seems to be very important
             //unidentified bug so far
