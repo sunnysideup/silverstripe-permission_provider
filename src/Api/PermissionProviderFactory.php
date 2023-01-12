@@ -19,8 +19,7 @@ use SilverStripe\Security\PermissionRole;
 use SilverStripe\Security\PermissionRoleCode;
 use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
-/** @property Member|null $member */
-
+/** @property null|Member $member */
 class PermissionProviderFactory implements PermissionProvider
 {
     use Injectable;
@@ -99,17 +98,17 @@ class PermissionProviderFactory implements PermissionProvider
     protected $permissionArray = [];
 
     /**
-     * @var DataObject|Member|null
+     * @var null|DataObject|Member
      */
     protected $member;
 
     /**
-     * @var DataObject|Group|null
+     * @var null|DataObject|Group
      */
     protected $group;
 
     /**
-     * @var DataObject|PermissionRole|null
+     * @var null|DataObject|PermissionRole
      */
     protected $permissionRole;
 
@@ -393,7 +392,7 @@ class PermissionProviderFactory implements PermissionProvider
         $filter = ['Email' => $this->getEmail()];
         $this->isNewMember = false;
 
-        /** @property Member|null $member */
+        // @property Member|null $member
         $this->member = Member::get_one(
             Member::class,
             $filter,
@@ -401,7 +400,7 @@ class PermissionProviderFactory implements PermissionProvider
         );
         if (! $this->member) {
             $this->isNewMember = true;
-            /** @property Member $member */
+            // @property Member $member
             $this->member = Member::create($filter);
         }
 
@@ -437,12 +436,12 @@ class PermissionProviderFactory implements PermissionProvider
         }
 
         if (0 === $groupCount) {
-            /** @property Group|null $group */
+            // @property Group|null $group
             $this->group = Group::create($filterAnyArrayForGroup);
             $this->group->write();
             $groupStyle = 'created';
         } else {
-            /** @property Group|null $group */
+            // @property Group|null $group
             $this->group = $groupDataList->First();
         }
 
@@ -605,7 +604,7 @@ class PermissionProviderFactory implements PermissionProvider
                 $this->showDebugMessage("{$this->getRoleTitle()} role in place");
             } else {
                 $this->showDebugMessage("adding {$this->getRoleTitle()} role", 'created');
-                /** @property PermissionRole|null $permissionRole */
+                // @property PermissionRole|null $permissionRole
                 $this->permissionRole = PermissionRole::create();
                 $this->permissionRole->Title = $this->getRoleTitle();
                 $this->permissionRole->OnlyAdminCanApply = true;
@@ -613,7 +612,7 @@ class PermissionProviderFactory implements PermissionProvider
             }
 
             if (! $this->permissionRole instanceof PermissionRole) {
-                /** @property PermissionRole|null $permissionRole */
+                // @property PermissionRole|null $permissionRole
                 $this->permissionRole = DataObject::get_one(
                     PermissionRole::class,
                     ['Title' => $this->getRoleTitle()],
