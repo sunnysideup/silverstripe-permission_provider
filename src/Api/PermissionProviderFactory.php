@@ -408,7 +408,7 @@ class PermissionProviderFactory implements PermissionProvider
         $this->member->Surname = $this->getSurname();
         $this->member->write();
         $this->updatePassword();
-        // @return Member $member
+        // @return Member
         return $this->member;
     }
 
