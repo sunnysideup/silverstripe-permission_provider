@@ -182,8 +182,8 @@ class PermissionProviderFactory implements PermissionProvider
     {
         if (! $this->isEmail($this->email)) {
             $baseURL = Director::absoluteBaseURL();
-            $baseURL = str_replace('https://', '', $baseURL);
-            $baseURL = str_replace('http://', '', $baseURL);
+            $baseURL = str_replace('https://', '', (string) $baseURL);
+            $baseURL = str_replace('http://', '', (string) $baseURL);
             $baseURL = trim($baseURL, '/');
             $baseURL = trim($baseURL, '/');
             $before = strtolower($this->email ?: $this->getFirstName() . '.' . $this->getSurname());
@@ -263,7 +263,7 @@ class PermissionProviderFactory implements PermissionProvider
         if (! $this->code) {
             $this->code = $this->groupName;
             $this->code = str_replace(' ', '_', $this->code);
-            $this->code = preg_replace('#[\\W_]+#u', '', $this->code);
+            $this->code = preg_replace('#[\\W_]+#u', '', (string) $this->code);
             //changing to lower case seems to be very important
             //unidentified bug so far
             $this->code = $this->codeToCleanCode($this->code);
