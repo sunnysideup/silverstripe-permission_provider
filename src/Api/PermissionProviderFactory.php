@@ -254,6 +254,12 @@ class PermissionProviderFactory implements PermissionProvider
     public function setCode(string $code): PermissionProviderFactory
     {
         $this->code = $this->codeToCleanCode($code);
+        if($this->code !== $code) {
+            user_error(
+                'Please provide a code that will not be changed to avoid unexpected results.  
+                The current code ' . $code . ' changed to ' . $this->code . '.'
+            );
+        }
 
         return $this;
     }
