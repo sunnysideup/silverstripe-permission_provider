@@ -17,7 +17,7 @@ $group = PermissionProviderFactory::inst()
     ->setPassword('change-on-next-login-123') // optional
     ->addRandomPassword() // optional
     ->setReplaceExistingPassword(false) // optional
-    ->setCode('research_managers') // optional
+    ->setCode('research-managers') // optional - IMPORTANT - DO NOT USE UNDERSCORES
     ->addMergeCode('research_managers_old') // optional
     ->addMergeCodes(['research_managers_old_also', ]) // optional
     ->setPermissionCode('CMS_ACCESS_RESEARCH_ADMIN') // optional
