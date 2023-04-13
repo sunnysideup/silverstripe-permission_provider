@@ -7,6 +7,12 @@ use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\ORM\DataExtension;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
 
+/**
+ * Class \Sunnysideup\PermissionProvider\Extensions\GroupExtension
+ *
+ * @property Group|GroupExtension $owner
+ * @property string $MainPermissionCode
+ */
 class GroupExtension extends DataExtension
 {
     private static $db = [
