@@ -10,7 +10,7 @@ use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
 /**
  * Class \Sunnysideup\PermissionProvider\Extensions\GroupExtension
  *
- * @property \SilverStripe\Security\Group|\Sunnysideup\PermissionProvider\Extensions\GroupExtension $owner
+ * @property Group|GroupExtension $owner
  * @property string $MainPermissionCode
  */
 class GroupExtension extends DataExtension
