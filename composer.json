@@ -1,35 +1,35 @@
 {
-    "name": "sunnysideup/permission_provider",
-    "type": "silverstripe-vendormodule",
-    "description": "Make it easier to set up permission groups (creates a member / user, group, and role in one go) for the Silverstripe CMS.",
-    "keywords": [
-        "Silverstripe-CMS",
-        "CMS",
-        "Silverstripe",
-        "security",
-        "role",
-        "group",
-        "group",
-        "member",
-        "permissions",
-        "permission",
-        "permission"
-    ],
-    "license": "BSD-3-Clause",
-    "authors": [
-        {
-            "name": "Nicolaas Francken",
-            "email": "modules@sunnysideup.co.nz",
-            "role": "lead developer"
-        }
-    ],
-    "require": {
-        "silverstripe/recipe-cms": "^4.0 || ^5.0"
-    },
-    "extra": [],
-    "autoload": {
-        "psr-4": {
-            "Sunnysideup\\PermissionProvider\\": "src/"
-        }
+  "name": "sunnysideup/permission_provider",
+  "type": "silverstripe-vendormodule",
+  "description": "Make it easier to set up permission groups (creates a member / user, group, and role in one go) for the Silverstripe CMS.",
+  "keywords": [
+    "Silverstripe-CMS",
+    "CMS",
+    "Silverstripe",
+    "security",
+    "role",
+    "group",
+    "group",
+    "member",
+    "permissions",
+    "permission",
+    "permission"
+  ],
+  "license": "BSD-3-Clause",
+  "authors": [
+    {
+      "name": "Nicolaas Francken",
+      "email": "modules@sunnysideup.co.nz",
+      "role": "lead developer"
     }
+  ],
+  "require": {
+    "silverstripe/recipe-cms": "^4.0 || ^5.0"
+  },
+  "extra": [],
+  "autoload": {
+    "psr-4": {
+      "Sunnysideup\\PermissionProvider\\": "src/"
+    }
+  }
 }
