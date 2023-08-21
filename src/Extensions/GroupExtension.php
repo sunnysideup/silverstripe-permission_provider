@@ -13,6 +13,7 @@ use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
  *
  * @property Group|GroupExtension $owner
  * @property string $MainPermissionCode
+ * @property string $DefaultLoginLink
  */
 class GroupExtension extends DataExtension
 {
