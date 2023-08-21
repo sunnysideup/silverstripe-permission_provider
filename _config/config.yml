@@ -5,3 +5,9 @@ name: permision_provider
 SilverStripe\Security\Group:
   extensions:
     - Sunnysideup\PermissionProvider\Extensions\GroupExtension
+
+
+
+SilverStripe\Security\MemberAuthenticator\LoginHandler:
+  extensions:
+    - Sunnysideup\PermissionProvider\Extensions\LoginHandlerExtension
