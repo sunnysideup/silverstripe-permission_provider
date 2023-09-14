@@ -2,7 +2,6 @@
 
 namespace Sunnysideup\PermissionProvider\Extensions;
 
-use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Extension;
 use SilverStripe\Security\Member;
@@ -29,5 +28,4 @@ class LoginHandlerExtension extends Extension
             }
         }
     }
-
 }
