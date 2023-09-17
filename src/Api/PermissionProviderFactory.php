@@ -787,9 +787,7 @@ class PermissionProviderFactory implements PermissionProvider
                 ->setTo($to)
                 ->setSubject($subject)
             ;
-            if ($email->send()) {
-                //email sent successfully
-            }
+            //$email->send();
         }
 
         // there may have been 1 or more failures
