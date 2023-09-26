@@ -184,9 +184,9 @@ class PermissionProviderFactory implements PermissionProvider
             $baseURL = Director::absoluteBaseURL();
             $baseURL = str_replace('https://', '', (string) $baseURL);
             $baseURL = str_replace('http://', '', (string) $baseURL);
-            $baseURL = trim($baseURL, '/');
-            $baseURL = trim($baseURL, '/');
-            $before = strtolower($this->email ?: $this->getFirstName() . '.' . $this->getSurname());
+            $baseURL = trim((string) $baseURL, '/');
+            $baseURL = trim((string) $baseURL, '/');
+            $before = strtolower((string) $this->email ?: $this->getFirstName() . '.' . $this->getSurname());
             $before = strtolower(preg_replace('#[^\pL\pN]+#u', '-', $before));
             $this->email = $before . '@' . $baseURL;
         }
