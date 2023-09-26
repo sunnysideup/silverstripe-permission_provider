@@ -20,7 +20,7 @@ class LoginHandlerExtension extends Extension
         if ($member) {
             $redirectorGroup = $member->Groups()->filter('DefaultLoginLink:not', ['', null])->first();
             if ($redirectorGroup) {
-                Config::modify()->merge(
+                Config::modify()->set(
                     Security::class,
                     'default_login_dest',
                     $redirectorGroup->DefaultLoginLink
