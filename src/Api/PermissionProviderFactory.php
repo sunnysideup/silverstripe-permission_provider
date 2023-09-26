@@ -187,7 +187,7 @@ class PermissionProviderFactory implements PermissionProvider
             $baseURL = trim((string) $baseURL, '/');
             $baseURL = trim((string) $baseURL, '/');
             $before = strtolower((string) $this->email ?: $this->getFirstName() . '.' . $this->getSurname());
-            $before = strtolower(preg_replace('#[^\pL\pN]+#u', '-', $before));
+            $before = strtolower(preg_replace('#[^\pL\pN]+#u', '-', (string) $before));
             $this->email = $before . '@' . $baseURL;
         }
 
