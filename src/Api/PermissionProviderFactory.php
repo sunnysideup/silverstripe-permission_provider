@@ -767,7 +767,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected function sendEmailToMember()
     {
-        $link = Director::absoluteURL('Security/lostpassword');
+        $link = Director::absoluteURL('/Security/lostpassword');
         $from = Config::inst()->get(Email::class, 'admin_email');
         $to = $this->getEmail();
         $subject = $this->isNewMember ? $this->subjectNew : $this->subjectExisting;
