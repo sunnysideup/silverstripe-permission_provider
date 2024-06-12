@@ -185,9 +185,9 @@ class PermissionProviderFactory implements PermissionProvider
             $baseURL = str_replace('https://', '', (string) $baseURL);
             $baseURL = str_replace('http://', '', (string) $baseURL);
             $baseURL = trim((string) $baseURL, '/');
-            $baseURL = trim((string) $baseURL, '/');
+            $baseURL = trim($baseURL, '/');
             $before = strtolower((string) $this->email ?: $this->getFirstName() . '.' . $this->getSurname());
-            $before = strtolower(preg_replace('#[^\pL\pN]+#u', '-', (string) $before));
+            $before = strtolower(preg_replace('#[^\pL\pN]+#u', '-', $before));
             $this->email = $before . '@' . $baseURL;
         }
 
@@ -425,11 +425,11 @@ class PermissionProviderFactory implements PermissionProvider
     {
         $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
         $this->checkVariables();
-        if (null !== $member) {
+        if ($member instanceof \SilverStripe\Security\Member) {
             $this->member = $member;
         }
 
-        if (! $this->getCode()) {
+        if ($this->getCode() === '' || $this->getCode() === '0') {
             user_error('No group code set for the creation of group');
         }
 
@@ -500,17 +500,15 @@ class PermissionProviderFactory implements PermissionProvider
             $this->showDebugMessage('adding parent group');
             if (is_string($this->parentGroup)) {
                 $parentGroupName = $this->parentGroup;
-                if ($parentGroupName) {
-                    $code = $this->codeToCleanCode($parentGroupName);
-                    $filter = ['Title' => $parentGroupName, 'Code' => $code];
-                    $this->parentGroup = Group::get()->filterAny($filter)->first();
-                    if (null === $this->parentGroup) {
-                        $this->parentGroup = Group::create($filter);
-                        $parentGroupStyle = 'created';
-                        $this->parentGroup->Title = $parentGroupName;
-                        $this->parentGroup->write();
-                        $this->showDebugMessage("{$parentGroupStyle} {$parentGroupName}");
-                    }
+                $code = $this->codeToCleanCode($parentGroupName);
+                $filter = ['Title' => $parentGroupName, 'Code' => $code];
+                $this->parentGroup = Group::get()->filterAny($filter)->first();
+                if (null === $this->parentGroup) {
+                    $this->parentGroup = Group::create($filter);
+                    $parentGroupStyle = 'created';
+                    $this->parentGroup->Title = $parentGroupName;
+                    $this->parentGroup->write();
+                    $this->showDebugMessage("{$parentGroupStyle} {$parentGroupName}");
                 }
             }
 
@@ -529,7 +527,7 @@ class PermissionProviderFactory implements PermissionProvider
         }
 
         $groupCodes = array_filter($groupCodes);
-        if (! empty($groupCodes) && $this->group && $this->group->ID) {
+        if ($groupCodes !== [] && $this->group && $this->group->ID) {
             $doubleGroups = Group::get()
                 ->filter(['Code' => $groupCodes])
                 ->exclude(['ID' => (int) $this->group->ID])
@@ -633,43 +631,41 @@ class PermissionProviderFactory implements PermissionProvider
      */
     protected function addPermissionsToRole()
     {
-        if (null !== $this->permissionRole) {
-            if (is_array($this->permissionArray) && count($this->permissionArray)) {
-                $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
-                foreach ($this->permissionArray as $permissionRoleCode) {
-                    $permissionRoleCodeObject = DataObject::get_one(
-                        PermissionRoleCode::class,
-                        ['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID],
-                        $cacheDataObjectGetOne = false
-                    );
-                    $count = PermissionRoleCode::get()
+        if (null !== $this->permissionRole && (is_array($this->permissionArray) && count($this->permissionArray))) {
+            $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
+            foreach ($this->permissionArray as $permissionRoleCode) {
+                $permissionRoleCodeObject = DataObject::get_one(
+                    PermissionRoleCode::class,
+                    ['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID],
+                    $cacheDataObjectGetOne = false
+                );
+                $count = PermissionRoleCode::get()
+                    ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
+                    ->Count()
+                ;
+                if ($count > 1) {
+                    $permissionRoleCodeObjectsToDelete = PermissionRoleCode::get()
                         ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
-                        ->Count()
+                        ->Exclude(['ID' => $permissionRoleCodeObject->ID])
                     ;
-                    if ($count > 1) {
-                        $permissionRoleCodeObjectsToDelete = PermissionRoleCode::get()
-                            ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
-                            ->Exclude(['ID' => $permissionRoleCodeObject->ID])
-                        ;
-                        foreach ($permissionRoleCodeObjectsToDelete as $permissionRoleCodeObjectToDelete) {
-                            $this->showDebugMessage("DELETING double permission code {$permissionRoleCode} for " . $this->permissionRole->Title, 'deleted');
-                            $permissionRoleCodeObjectToDelete->delete();
-                        }
-
-                        $this->showDebugMessage('
-                            There is more than one Permission Role Code in ' . $this->permissionRole->Title . "
-                            with Code = {$permissionRoleCode} ({$count})", 'deleted');
-                    } elseif (1 === $count) {
-                        //do nothing
-                    } else {
-                        $permissionRoleCodeObject = PermissionRoleCode::create();
-                        $permissionRoleCodeObject->Code = $permissionRoleCode;
-                        $permissionRoleCodeObject->RoleID = $this->permissionRole->ID;
+                    foreach ($permissionRoleCodeObjectsToDelete as $permissionRoleCodeObjectToDelete) {
+                        $this->showDebugMessage("DELETING double permission code {$permissionRoleCode} for " . $this->permissionRole->Title, 'deleted');
+                        $permissionRoleCodeObjectToDelete->delete();
                     }
 
-                    $this->showDebugMessage('adding ' . $permissionRoleCodeObject->Code . ' to ' . $this->permissionRole->Title);
-                    $permissionRoleCodeObject->write();
+                    $this->showDebugMessage('
+                            There is more than one Permission Role Code in ' . $this->permissionRole->Title . "
+                            with Code = {$permissionRoleCode} ({$count})", 'deleted');
+                } elseif (1 === $count) {
+                    //do nothing
+                } else {
+                    $permissionRoleCodeObject = PermissionRoleCode::create();
+                    $permissionRoleCodeObject->Code = $permissionRoleCode;
+                    $permissionRoleCodeObject->RoleID = $this->permissionRole->ID;
                 }
+
+                $this->showDebugMessage('adding ' . $permissionRoleCodeObject->Code . ' to ' . $this->permissionRole->Title);
+                $permissionRoleCodeObject->write();
             }
         }
     }
@@ -753,14 +749,12 @@ class PermissionProviderFactory implements PermissionProvider
             $this->addRandomPassword();
         }
 
-        if ('' !== $this->password) {
-            if ($this->isNewMember || $this->replaceExistingPassword) {
-                $this->member->changePassword($this->password);
-                $this->member->PasswordExpiry = date('Y-m-d');
-                $this->member->write();
-                if ($this->sendPasswordResetLink) {
-                    $this->sendEmailToMember();
-                }
+        if ('' !== $this->password && ($this->isNewMember || $this->replaceExistingPassword)) {
+            $this->member->changePassword($this->password);
+            $this->member->PasswordExpiry = date('Y-m-d');
+            $this->member->write();
+            if ($this->sendPasswordResetLink) {
+                $this->sendEmailToMember();
             }
         }
     }
