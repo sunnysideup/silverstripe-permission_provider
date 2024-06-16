@@ -766,7 +766,7 @@ class PermissionProviderFactory implements PermissionProvider
             if($this->forcePasswordReset) {
                 $this->member->PasswordExpiry = date('Y-m-d');
             } else {
-                $this->member->PasswordExpiry = date('Y-m-d', strtotime('+10 years'));
+                $this->member->PasswordExpiry = null;
             }
             $this->member->write();
             if ($this->sendPasswordResetLink) {
