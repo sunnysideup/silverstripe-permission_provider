@@ -56,6 +56,11 @@ class PermissionProviderFactory implements PermissionProvider
     protected $replaceExistingPassword = false;
 
     /**
+     * @var bool
+     */
+    protected $forcePasswordReset = true;
+
+    /**
      * @var string
      */
     protected $code = '';
@@ -247,6 +252,13 @@ class PermissionProviderFactory implements PermissionProvider
     public function setReplaceExistingPassword(bool $b): PermissionProviderFactory
     {
         $this->replaceExistingPassword = $b;
+
+        return $this;
+    }
+
+    public function setForcePasswordReset(bool $b): PermissionProviderFactory
+    {
+        $this->forcePasswordReset = $b;
 
         return $this;
     }
@@ -751,7 +763,9 @@ class PermissionProviderFactory implements PermissionProvider
 
         if ('' !== $this->password && ($this->isNewMember || $this->replaceExistingPassword)) {
             $this->member->changePassword($this->password);
-            $this->member->PasswordExpiry = date('Y-m-d');
+            if($this->forcePasswordReset) {
+                $this->member->PasswordExpiry = date('Y-m-d');
+            }
             $this->member->write();
             if ($this->sendPasswordResetLink) {
                 $this->sendEmailToMember();
