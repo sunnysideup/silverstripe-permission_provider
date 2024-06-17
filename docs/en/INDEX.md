@@ -30,6 +30,7 @@ $group = PermissionProviderFactory::inst()
     // ->CreateGroup();
     // ->AddMemberToGroup($member);
 ```
+
 OR
 
 ```php
@@ -51,6 +52,7 @@ $group = PermissionProviderFactory::inst()
     ->CreateGroup();
 
 ```
+
 OR
 
 ```php
@@ -58,5 +60,74 @@ $member = Member::get_one();
 PermissionProviderFactory::inst()
     ->setGroupName('Research Managers') // required
     ->AddMemberToGroup($member);
+
+```
+
+## setting up access rules for a specific DataObject
+
+```php
+
+use SilverStripe\Security\PermissionProvider;
+use Sunnysideup\PermissionProvider\Traits\GenericCanMethodTrait;
+
+class MyDataObject extends DataObject implements PermissionProvider
+{
+    use GenericCanMethodTrait;
+
+    ##########################
+    // the following methods are optional extras....
+    ##########################
+
+    private static $table_name = 'Unique';
+
+    protected function canCreateMoreSpecific($member = null, $context = []) : ?bool
+    {
+        return true;
+    }
+
+    protected function canViewMoreSpecific($member = null): ?bool
+    {
+        return true;
+    }
+
+    protected function canEditMoreSpecific($member = null): ?bool
+    {
+        return true;
+    }
+
+    protected function canDeleteMoreSpecific($member = null): ?bool
+    {
+        return true;
+    }
+
+    protected function MembersForPermissionCheck(): DataList
+    {
+        return $this->MyMembers();
+    }
+
+    protected function OwnersForPermissionCheck(): DataList
+    {
+        return $this->MyOwners();
+    }
+
+}
+```
+
+Once this is set up you can then grant access for a specific group like this:
+
+```php
+$group = PermissionProviderFactory::inst()
+    ->setGroupName('Research Managers') // required
+    ->setPermissionCode('CMS_ACCESS_RESEARCH_ADMIN') // optional
+    ->setRoleTitle('Research Manager Privileges') // optional
+    ->setPermissionArray(
+        [
+            'UNIQUE_CAN_VIEW',
+        ]
+    )
+    ->CreateGroupAndMember();
+    // ->CreateDefaultMember();
+    // ->CreateGroup();
+    // ->AddMemberToGroup($member);
 
 ```

@@ -6,6 +6,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
+use SilverStripe\Security\Group;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
 
 /**
@@ -20,6 +21,9 @@ class GroupExtension extends DataExtension
     private static $db = [
         'MainPermissionCode' => 'Varchar',
         'DefaultLoginLink' => 'Text',
+    ];
+    private static $indexes = [
+        'MainPermissionCode' => true,
     ];
 
     public function updateCMSFields(FieldList $fields)
@@ -53,8 +57,32 @@ class GroupExtension extends DataExtension
         $obj->run(null);
     }
 
-    public function createdThroughFactory(): bool
+    public function IsCreatedThroughFactory(): bool
     {
         return (bool) $this->getOwner()->MainPermissionCode;
+    }
+
+    /**
+     * DataObject delete permissions
+     * @param Member $member
+     * @return boolean
+     */
+    public function canEdit($member = null)
+    {
+        if($this->IsCreatedThroughFactory()) {
+            return false;
+        }
+    }
+
+    /**
+     * DataObject delete permissions
+     * @param Member $member
+     * @return boolean
+     */
+    public function canDelete($member = null)
+    {
+        if($this->IsCreatedThroughFactory()) {
+            return false;
+        }
     }
 }

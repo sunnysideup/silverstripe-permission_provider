@@ -155,11 +155,10 @@ class PermissionProviderFactory implements PermissionProvider
     public function providePermissions()
     {
         $permissions = [];
-        $classNames = ClassInfo::implementorsOf(PermissionProviderFactoryProvider::class);
-        foreach ($classNames as $className) {
-            $group = $className::permission_provider_factory_runner();
+        $groups = Group::get()->filter(['MainPermissionCode:not' => ['', null]]);
+        foreach ($groups as $group) {
             $parentGroup = $group->Parent();
-            $category = $parentGroup && $parentGroup->exists() ? $parentGroup->Title : 'OTHER';
+            $category = 'Group based permissions';
             $permissions[$group->MainPermissionCode] = [
                 'name' => $group->Title,
                 'category' => $category,
