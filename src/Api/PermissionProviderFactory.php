@@ -595,19 +595,24 @@ class PermissionProviderFactory implements PermissionProvider
     protected function addOrUpdateRole()
     {
         if ('' !== $this->getRoleTitle()) {
+            $code = $this->getPermissionCode();
+            if(! $code) {
+                return;
+            }
+            $filter = ['MainPermissionCode' => $code];
             $count = PermissionRole::get()
-                ->Filter(['Title' => $this->getRoleTitle()])
+                ->Filter($filter)
                 ->Count()
             ;
             if ($count > 1) {
                 $this->showDebugMessage("There is more than one Permission Role with title {$this->getRoleTitle()} ({$count})", 'deleted');
                 $permissionRolesFirst = DataObject::get_one(
                     PermissionRole::class,
-                    ['Title' => $this->getRoleTitle()],
+                    $filter,
                     $cacheDataObjectGetOne = false
                 );
                 $permissionRolesToDelete = PermissionRole::get()
-                    ->Filter(['Title' => $this->getRoleTitle()])
+                    ->Filter($filter)
                     ->Exclude(['ID' => $permissionRolesFirst->ID])
                 ;
                 foreach ($permissionRolesToDelete as $permissionRoleToDelete) {
@@ -623,6 +628,8 @@ class PermissionProviderFactory implements PermissionProvider
                 $this->permissionRole = PermissionRole::create();
                 $this->permissionRole->Title = $this->getRoleTitle();
                 $this->permissionRole->OnlyAdminCanApply = true;
+                $this->permissionRole->MainPermissionCode = $code;
+
                 $this->permissionRole->write();
             }
 
@@ -630,7 +637,7 @@ class PermissionProviderFactory implements PermissionProvider
                 // @property PermissionRole|null $permissionRole
                 $this->permissionRole = DataObject::get_one(
                     PermissionRole::class,
-                    ['Title' => $this->getRoleTitle()],
+                    $filter,
                     $cacheDataObjectGetOne = false
                 );
             }
@@ -644,7 +651,16 @@ class PermissionProviderFactory implements PermissionProvider
     {
         if (null !== $this->permissionRole && (is_array($this->permissionArray) && count($this->permissionArray))) {
             $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
+            $privilegedCodes = Permission::config()->privileged_permissions;
             foreach ($this->permissionArray as $permissionRoleCode) {
+                if(! $permissionRoleCode) {
+                    continue;
+                }
+                if(in_array($permissionRoleCode, $privilegedCodes)) {
+                    DataObject::config()->set('validation_enabled', false);
+                } else {
+                    DataObject::config()->set('validation_enabled', true);
+                }
                 $permissionRoleCodeObject = DataObject::get_one(
                     PermissionRoleCode::class,
                     ['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID],
@@ -683,7 +699,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected function addRoleToGroup()
     {
-        $this->addRoleToGroupInner($this->permissionRole);
+        $this->addRoleToGroupInner();
     }
 
     protected function addOtherRolesToGroup()
@@ -698,20 +714,20 @@ class PermissionProviderFactory implements PermissionProvider
         }
     }
 
-    protected function addRoleToGroupInner($roleObject)
+    protected function addRoleToGroupInner()
     {
-        if ($this->group && $roleObject instanceof PermissionRole) {
+        if ($this->group && $this->permissionRole instanceof PermissionRole) {
             $count = (int) DB::query(
                 'SELECT COUNT(*)
                 FROM Group_Roles
-                WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' . $roleObject->ID
+                WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' .$this->permissionRole->ID
             )->value();
             if (0 === $count) {
-                $this->showDebugMessage('ADDING ' . $roleObject->Title . ' permission role  to ' . $this->group->Title . ' group', 'created');
-                $existingGroups = $roleObject->Groups();
+                $this->showDebugMessage('ADDING ' . $this->permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group', 'created');
+                $existingGroups = $this->permissionRole->Groups();
                 $existingGroups->add($this->group);
             } else {
-                $this->showDebugMessage('CHECKED ' . $roleObject->Title . ' permission role  to ' . $this->group->Title . ' group');
+                $this->showDebugMessage('CHECKED ' . $this->permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group');
             }
         } else {
             $this->showDebugMessage('ERROR: missing group or roleObject', 'deleted');

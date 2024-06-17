@@ -17,11 +17,10 @@ use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
  * @property string $MainPermissionCode
  * @property string $DefaultLoginLink
  */
-class GroupExtension extends DataExtension
+class RoleExtension extends DataExtension
 {
     private static $db = [
         'MainPermissionCode' => 'Varchar',
-        'DefaultLoginLink' => 'Text',
     ];
     private static $indexes = [
         'MainPermissionCode' => true,
@@ -31,31 +30,11 @@ class GroupExtension extends DataExtension
     {
         $fields->removeByName(['MainPermissionCode']);
         $fields->addFieldsToTab(
-            'Root.Members',
-            [
-                ReadonlyField::create('Code', 'Code'),
-            ],
-            'Description'
-        );
-        $fields->addFieldsToTab(
             'Root.Permissions',
             [
                 ReadonlyField::create('MainPermissionCode', 'Main Permission Code'),
             ]
         );
-        $fields->addFieldsToTab(
-            'Root.Redirect',
-            [
-                TextField::create('DefaultLoginLink', 'Default Login Link')
-                    ->setDescription('Optional. This is the link that the user, who belongs to this group, will be redirected to after login. If they belong to more than one group with redirection then you can not sure how they will be redirected.'),
-            ]
-        );
-    }
-
-    public function requireDefaultRecords()
-    {
-        $obj = PermissionProviderBuildTask::create();
-        $obj->run(null);
     }
 
     public function IsCreatedThroughFactory(): bool
@@ -70,7 +49,6 @@ class GroupExtension extends DataExtension
      */
     public function canEdit($member = null)
     {
-        return true;
         if($this->IsCreatedThroughFactory()) {
             return false;
         }
@@ -83,7 +61,6 @@ class GroupExtension extends DataExtension
      */
     public function canDelete($member = null)
     {
-        return true;
         if($this->IsCreatedThroughFactory()) {
             return false;
         }

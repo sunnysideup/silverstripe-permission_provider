@@ -72,44 +72,36 @@ use Sunnysideup\PermissionProvider\Traits\GenericCanMethodTrait;
 
 class MyDataObject extends DataObject implements PermissionProvider
 {
-    use GenericCanMethodTrait;
-
-    ##########################
-    // the following methods are optional extras....
-    ##########################
+    private static array $extensions = [
+        GenericCanMethodTrait::class,
+    ];
 
     private static $table_name = 'Unique';
-
-    protected function canCreateMoreSpecific($member = null, $context = []) : ?bool
+        
+    public function providePermissions()
     {
-        return true;
+        return $this->providePermissionsHelper();
     }
 
-    protected function canViewMoreSpecific($member = null): ?bool
-    {
-        return true;
-    }
+    ##########################
+    // the following code is ALL OPTIONAL EXTRAS....
+    ##########################
 
-    protected function canEditMoreSpecific($member = null): ?bool
-    {
-        return true;
-    }
 
-    protected function canDeleteMoreSpecific($member = null): ?bool
-    {
-        return true;
-    }
+    private static $has_many = [
+        'Members' => Member::class,
+        'Owners' => Member::class,
+    ];
 
     protected function MembersForPermissionCheck(): DataList
     {
-        return $this->MyMembers();
+        return $this->Members();
     }
 
     protected function OwnersForPermissionCheck(): DataList
     {
-        return $this->MyOwners();
+        return $this->Owners();
     }
-
 }
 ```
 
@@ -122,7 +114,9 @@ $group = PermissionProviderFactory::inst()
     ->setRoleTitle('Research Manager Privileges') // optional
     ->setPermissionArray(
         [
+            'UNIQUE_CAN_CREATE',
             'UNIQUE_CAN_VIEW',
+            // etc....
         ]
     )
     ->CreateGroupAndMember();
