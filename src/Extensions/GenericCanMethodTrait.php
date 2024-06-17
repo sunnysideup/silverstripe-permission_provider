@@ -187,14 +187,14 @@ class GenericCanMethodTrait extends DataExtension
         }
     }
 
-    private $table_cache_for_permissions = null;
+    private $table_cache_for_permissions = [];
 
     private function getPermissionCodeForThisClass(): string
     {
         $owner = $this->getOwner();
-        if($this->table_cache_for_permissions === null) {
+        if(!isset($this->table_cache_for_permissions[$owner::class])) {
             $schema = $owner::getSchema();
-            $this->table_cache_for_permissions = strtoupper(
+            $this->table_cache_for_permissions[$owner::class] = strtoupper(
                 //underscore before caps
                 preg_replace(
                     '/(?<!^)([A-Z])/',
@@ -203,6 +203,6 @@ class GenericCanMethodTrait extends DataExtension
                 )
             );
         }
-        return $this->table_cache_for_permissions;
+        return $this->table_cache_for_permissions[$owner::class];
     }
 }

@@ -70,7 +70,6 @@ class GroupExtension extends DataExtension
      */
     public function canEdit($member = null)
     {
-        return true;
         if($this->IsCreatedThroughFactory()) {
             return false;
         }
@@ -83,7 +82,6 @@ class GroupExtension extends DataExtension
      */
     public function canDelete($member = null)
     {
-        return true;
         if($this->IsCreatedThroughFactory()) {
             return false;
         }
