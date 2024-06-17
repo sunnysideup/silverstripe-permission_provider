@@ -784,6 +784,10 @@ class PermissionProviderFactory implements PermissionProvider
                 $this->sendEmailToMember();
             }
         }
+        if(!$this->forcePasswordReset) {
+            $this->member->PasswordExpiry = null;
+            $this->member->write();
+        }
     }
 
     protected function sendEmailToMember()
