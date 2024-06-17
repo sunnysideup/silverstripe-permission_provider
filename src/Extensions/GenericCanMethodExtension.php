@@ -7,7 +7,7 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 
-class GenericCanMethodTrait extends DataExtension
+class GenericCanMethodExtension extends DataExtension
 {
     public function genericCanMethod(string $methodName, ?Member $member = null): ?bool
     {
@@ -189,7 +189,7 @@ class GenericCanMethodTrait extends DataExtension
 
     private $table_cache_for_permissions = [];
 
-    private function getPermissionCodeForThisClass(): string
+    public function getPermissionCodeForThisClass(): string
     {
         $owner = $this->getOwner();
         if(!isset($this->table_cache_for_permissions[$owner::class])) {
