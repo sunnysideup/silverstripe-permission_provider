@@ -778,16 +778,13 @@ class PermissionProviderFactory implements PermissionProvider
 
         if ('' !== $this->password && ($this->isNewMember || $this->replaceExistingPassword)) {
             $this->member->changePassword($this->password);
-            $this->member->PasswordExpiry = $this->forcePasswordReset ? date('Y-m-d') : null;
             $this->member->write();
             if ($this->sendPasswordResetLink) {
                 $this->sendEmailToMember();
             }
         }
-        if(!$this->forcePasswordReset) {
-            $this->member->PasswordExpiry = null;
-            $this->member->write();
-        }
+        $this->member->PasswordExpiry = $this->forcePasswordReset ? date('Y-m-d') : null;
+        $this->member->write();
     }
 
     protected function sendEmailToMember()
