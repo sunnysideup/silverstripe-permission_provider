@@ -18,8 +18,7 @@ trait GenericCanMethodTrait
                 return $value;
             }
         }
-        $code = $this->getPermissionCodeForThisClass();
-        $code .= '_CAN_'.strtoupper($methodName);
+        $code = $this->getPermissionCodeForThisClass().'_CAN_'.strtoupper($methodName);
         if(Permission::check($code, 'any', $this)) {
             return true;
         }
