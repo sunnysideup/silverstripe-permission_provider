@@ -86,7 +86,6 @@ class GenericCanMethodTrait extends DataExtension
      * in the Security section of the CMS.
      * @return array
      */
-
     public function providePermissionsHelper(): array
     {
         $owner = $this->getOwner();
