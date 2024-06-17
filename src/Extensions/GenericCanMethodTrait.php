@@ -82,7 +82,7 @@ class GenericCanMethodTrait extends DataExtension
     }
 
     /**
-     * Return a map of permission codes to add to the dropdown shown
+     * Return a map of permission codes to add to the list shown
      * in the Security section of the CMS.
      * @return array
      */
