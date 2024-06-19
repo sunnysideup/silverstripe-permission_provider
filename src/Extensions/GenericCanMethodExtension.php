@@ -192,14 +192,20 @@ class GenericCanMethodExtension extends DataExtension
     public function getPermissionCodeForThisClass(): string
     {
         $owner = $this->getOwner();
+        if($owner->hasMethod('getPermissionCodeClassNameForThisClass')) {
+            $className = $owner->getPermissionCodeClassNameForThisClass();
+        } else {
+            $className = $owner::class;
+        }
         if(!isset($this->table_cache_for_permissions[$owner::class])) {
             $schema = $owner::getSchema();
+
             $this->table_cache_for_permissions[$owner::class] = strtoupper(
                 //underscore before caps
                 preg_replace(
                     '/(?<!^)([A-Z])/',
                     '_$1',
-                    $schema->tableName($owner::class)
+                    $schema->tableName($className) ?: $className
                 )
             );
         }

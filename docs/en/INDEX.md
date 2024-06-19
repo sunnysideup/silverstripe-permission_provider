@@ -84,6 +84,19 @@ class MyDataObject extends DataObject implements PermissionProvider
     }
 
     ##########################
+    // HIGHLY RECOMMENDED
+    ##########################
+
+    /**
+     * This method ensures that classe that extend MyDataObject fall
+     * under the same permission code.
+     */
+    public function getPermissionCodeClassNameForThisClass() : string
+    {
+        return self::class;
+    }
+
+    ##########################
     // the following code is ALL OPTIONAL EXTRAS....
     ##########################
 
