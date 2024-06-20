@@ -176,10 +176,13 @@ class GenericCanMethodExtension extends DataExtension
     private function canEditAsMemberOrOwner(string $code, string $methodName, ?Member $member = null): ?bool
     {
         $owner = $this->getOwner();
-        if($owner->hasMethod($methodName)) {
+        if(! $member) {
+            $member = Security::getCurrentUser();
+        }
+        if($member && $owner->hasMethod($methodName)) {
             $member = Security::getCurrentUser();
             if($member) {
-                $owners = $owner->OwnersForPermissionCheck();
+                $owners = $owner->$methodName();
                 if($owners->exists()) {
                     return $owners->filter(['ID' => $member->ID])->exists();
                 }
