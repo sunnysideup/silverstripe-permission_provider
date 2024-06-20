@@ -31,7 +31,7 @@ class GenericCanMethodExtension extends DataExtension
     public function canView($member = null)
     {
         $owner = $this->getOwner();
-        if($owner->genericCanMethod('edit', $member)) {
+        if($owner->canEdit($member)) {
             return true;
         }
         if($owner->genericCanMethod('view', $member)) {
@@ -147,7 +147,7 @@ class GenericCanMethodExtension extends DataExtension
 
 
 
-    protected function canEditAsMember($member = null): bool
+    public function canEditAsMember($member = null): ?bool
     {
         $owner = $this->getOwner();
         if($owner->canEditAsOwner($member)) {
@@ -161,7 +161,7 @@ class GenericCanMethodExtension extends DataExtension
         );
     }
 
-    protected function canEditAsOwner($member = null): bool
+    public function canEditAsOwner($member = null): ?bool
     {
         $owner = $this->getOwner();
         $code = $this->getPermissionCodeForThisClass();
@@ -173,7 +173,7 @@ class GenericCanMethodExtension extends DataExtension
     }
 
 
-    private function canEditAsMemberOrOwner(string $code, string $methodName, ?Member $member = null)
+    private function canEditAsMemberOrOwner(string $code, string $methodName, ?Member $member = null): ?bool
     {
         $owner = $this->getOwner();
         if($owner->hasMethod($methodName)) {
@@ -185,6 +185,7 @@ class GenericCanMethodExtension extends DataExtension
                 }
             }
         }
+        return null;
     }
 
     private $table_cache_for_permissions = [];

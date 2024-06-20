@@ -172,7 +172,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     public static function inst()
     {
-        return new PermissionProviderFactory();
+        return Injector::inst()->create(PermissionProviderFactory::class);
     }
 
     public function setEmail(string $email): PermissionProviderFactory
