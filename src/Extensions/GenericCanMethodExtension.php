@@ -183,7 +183,7 @@ class GenericCanMethodExtension extends DataExtension
             $member = Security::getCurrentUser();
             if($member) {
                 $owners = $owner->$methodName();
-                if($owners->exists()) {
+                if($owners && $owners->exists()) {
                     return $owners->filter(['ID' => $member->ID])->exists();
                 }
             }
