@@ -4,7 +4,6 @@ namespace Sunnysideup\PermissionProvider\Api;
 
 use SilverStripe\Control\Director;
 use SilverStripe\Control\Email\Email;
-use SilverStripe\Core\ClassInfo;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Config\Configurable;
 use SilverStripe\Core\Injector\Injectable;
@@ -17,7 +16,6 @@ use SilverStripe\Security\Permission;
 use SilverStripe\Security\PermissionProvider;
 use SilverStripe\Security\PermissionRole;
 use SilverStripe\Security\PermissionRoleCode;
-use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
 /** @property null|Member $member */
 class PermissionProviderFactory implements PermissionProvider
@@ -596,7 +594,7 @@ class PermissionProviderFactory implements PermissionProvider
     {
         if ('' !== $this->getRoleTitle()) {
             $code = $this->getPermissionCode();
-            if(! $code) {
+            if ($code === '' || $code === '0') {
                 return;
             }
             $filter = ['MainPermissionCode' => $code];
@@ -653,10 +651,10 @@ class PermissionProviderFactory implements PermissionProvider
             $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
             $privilegedCodes = Permission::config()->privileged_permissions;
             foreach ($this->permissionArray as $permissionRoleCode) {
-                if(! $permissionRoleCode) {
+                if (! $permissionRoleCode) {
                     continue;
                 }
-                if(in_array($permissionRoleCode, $privilegedCodes)) {
+                if (in_array($permissionRoleCode, $privilegedCodes)) {
                     DataObject::config()->set('validation_enabled', false);
                 } else {
                     DataObject::config()->set('validation_enabled', true);
@@ -710,7 +708,7 @@ class PermissionProviderFactory implements PermissionProvider
                 ['Title' => $roleObjectTitle],
                 $cacheDataObjectGetOne = true
             );
-            $this->addRoleToGroupInner($roleObject);
+            $this->addRoleToGroupInner();
         }
     }
 
@@ -720,7 +718,7 @@ class PermissionProviderFactory implements PermissionProvider
             $count = (int) DB::query(
                 'SELECT COUNT(*)
                 FROM Group_Roles
-                WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' .$this->permissionRole->ID
+                WHERE GroupID = ' . $this->group->ID . ' AND PermissionRoleID = ' . $this->permissionRole->ID
             )->value();
             if (0 === $count) {
                 $this->showDebugMessage('ADDING ' . $this->permissionRole->Title . ' permission role  to ' . $this->group->Title . ' group', 'created');

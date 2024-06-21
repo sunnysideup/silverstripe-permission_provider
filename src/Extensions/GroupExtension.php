@@ -2,12 +2,12 @@
 
 namespace Sunnysideup\PermissionProvider\Extensions;
 
-use SilverStripe\Security\Member;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\ORM\DataExtension;
 use SilverStripe\Security\Group;
+use SilverStripe\Security\Member;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
 
 /**
@@ -23,6 +23,7 @@ class GroupExtension extends DataExtension
         'MainPermissionCode' => 'Varchar',
         'DefaultLoginLink' => 'Text',
     ];
+
     private static $indexes = [
         'MainPermissionCode' => true,
     ];
@@ -70,9 +71,10 @@ class GroupExtension extends DataExtension
      */
     public function canEdit($member = null)
     {
-        if($this->IsCreatedThroughFactory()) {
+        if ($this->IsCreatedThroughFactory()) {
             return false;
         }
+        return null;
     }
 
     /**
@@ -82,8 +84,9 @@ class GroupExtension extends DataExtension
      */
     public function canDelete($member = null)
     {
-        if($this->IsCreatedThroughFactory()) {
+        if ($this->IsCreatedThroughFactory()) {
             return false;
         }
+        return null;
     }
 }

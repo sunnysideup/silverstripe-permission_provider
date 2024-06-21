@@ -24,14 +24,10 @@ class PermissionProviderBuildTask extends BuildTask
     protected $_permissions = [];
 
     /**
-     *
-     *
      * @param null|HTTPRequest $request
-     * @return void
      */
     public function run($request)
     {
-
         $this->deletePermissionsNoLongerRequired();
         $this->createDefaultPermissions();
         $this->deletePermissionsNoLongerRequired();
@@ -53,7 +49,7 @@ class PermissionProviderBuildTask extends BuildTask
 
     protected function deletePermissionsNoLongerRequired()
     {
-        if(!empty($this->_permissions)) {
+        if ($this->_permissions !== []) {
             $permissions = Permission::get();
             foreach ($permissions as $permission) {
                 if (isset($this->_permissions[$permission->Code]) && 0 === $permission->Arg && 1 === $permission->Type) {
