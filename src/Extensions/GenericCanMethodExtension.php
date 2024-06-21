@@ -120,7 +120,7 @@ class GenericCanMethodExtension extends DataExtension
         }
         if($owner->hasMethod('MembersForPermissionCheck')) {
             $perms[$code.'_CAN_EDIT_AS_OWNER'] = [
-                'name' => 'Edit ' . $name.' as owner',
+                'name' => 'Edit ' . $name.' as owner of record',
                 'category' => 'Edit Records',
                 // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
                 // 'sort' => -100
@@ -128,7 +128,7 @@ class GenericCanMethodExtension extends DataExtension
         }
         if($owner->hasMethod('OwnersForPermissionCheck')) {
             $perms[$code.'_CAN_EDIT_AS_MEMBER'] = [
-                'name' => 'Edit ' . $name.' as member',
+                'name' => 'Edit ' . $name.' as member of record',
                 'category' => 'Edit Records',
                 // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
                 // 'sort' => -100
