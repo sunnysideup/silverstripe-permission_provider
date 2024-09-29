@@ -11,9 +11,8 @@ use SilverStripe\Security\Member;
 /**
  * Class \Sunnysideup\PermissionProvider\Extensions\GroupExtension.
  *
- * @property Group|GroupExtension $owner
+ * @property PermissionRole|RoleExtension $owner
  * @property string $MainPermissionCode
- * @property string $DefaultLoginLink
  */
 class RoleExtension extends DataExtension
 {

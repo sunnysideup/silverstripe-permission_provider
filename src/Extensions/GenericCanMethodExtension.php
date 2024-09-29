@@ -7,6 +7,11 @@ use SilverStripe\Security\Member;
 use SilverStripe\Security\Permission;
 use SilverStripe\Security\Security;
 
+/**
+ * Class \Sunnysideup\PermissionProvider\Extensions\GenericCanMethodExtension
+ *
+ * @property GenericCanMethodExtension $owner
+ */
 class GenericCanMethodExtension extends DataExtension
 {
     public function genericCanMethod(string $methodName, ?Member $member = null): ?bool
