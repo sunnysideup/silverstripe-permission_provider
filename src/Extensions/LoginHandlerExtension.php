@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\PermissionProvider\Extensions;
 
+use SilverStripe\Control\Controller;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Extension;
 use SilverStripe\Security\Member;
@@ -18,7 +19,7 @@ class LoginHandlerExtension extends Extension
     public function afterLogin(?Member $member = null)
     {
         if ($member instanceof \SilverStripe\Security\Member) {
-            $redirectorGroup = $member->Groups()->filter('DefaultLoginLink:not', ['', null])->first();
+            $redirectorGroup = $member->Groups()->filter('DefaultLoginLink:not', null)->first();
             if ($redirectorGroup) {
                 Config::modify()->set(
                     Security::class,
