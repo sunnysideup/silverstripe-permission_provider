@@ -18,7 +18,7 @@ class LoginHandlerExtension extends Extension
 {
     public function afterLogin(?Member $member = null)
     {
-        if ($member instanceof \SilverStripe\Security\Member) {
+        if ($member instanceof Member) {
             $redirectorGroup = $member->Groups()->filter('DefaultLoginLink:not', null)->first();
             if ($redirectorGroup) {
                 Config::modify()->set(
