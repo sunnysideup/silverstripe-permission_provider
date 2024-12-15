@@ -4,6 +4,11 @@ name: permision_provider
 SilverStripe\Security\Group:
   extensions:
     - Sunnysideup\PermissionProvider\Extensions\GroupExtension
+  summary_fields:
+    Title: Title
+    Parent.Title: Parent
+    Members.Count: Members
+  default_sort: "Sort ASC"
 
 SilverStripe\Security\PermissionRole:
   extensions:
