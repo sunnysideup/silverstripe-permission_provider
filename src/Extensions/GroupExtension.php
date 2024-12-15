@@ -5,7 +5,7 @@ namespace Sunnysideup\PermissionProvider\Extensions;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
@@ -17,7 +17,7 @@ use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
  * @property string $MainPermissionCode
  * @property string $DefaultLoginLink
  */
-class GroupExtension extends DataExtension
+class GroupExtension extends Extension
 {
     private static $db = [
         'MainPermissionCode' => 'Varchar',
