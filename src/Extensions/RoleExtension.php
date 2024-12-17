@@ -4,7 +4,7 @@ namespace Sunnysideup\PermissionProvider\Extensions;
 
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\ORM\DataExtension;
+use SilverStripe\Core\Extension;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 
@@ -14,7 +14,7 @@ use SilverStripe\Security\Member;
  * @property PermissionRole|RoleExtension $owner
  * @property string $MainPermissionCode
  */
-class RoleExtension extends DataExtension
+class RoleExtension extends Extension
 {
     private static $db = [
         'MainPermissionCode' => 'Varchar',
