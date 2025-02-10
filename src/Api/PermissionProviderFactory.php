@@ -539,8 +539,7 @@ class PermissionProviderFactory implements PermissionProvider
         if ($groupCodes !== [] && $this->group && $this->group->ID) {
             $doubleGroups = Group::get()
                 ->filter(['Code' => $groupCodes])
-                ->exclude(['ID' => (int) $this->group->ID])
-            ;
+                ->exclude(['ID' => (int) $this->group->ID]);
             if ($doubleGroups->exists()) {
                 $this->showDebugMessage($doubleGroups->count() . ' groups with the same name', 'deleted');
                 $realMembers = $this->group->Members();
@@ -600,8 +599,7 @@ class PermissionProviderFactory implements PermissionProvider
             $filter = ['MainPermissionCode' => $code];
             $count = PermissionRole::get()
                 ->Filter($filter)
-                ->Count()
-            ;
+                ->Count();
             if ($count > 1) {
                 $this->showDebugMessage("There is more than one Permission Role with title {$this->getRoleTitle()} ({$count})", 'deleted');
                 $permissionRolesFirst = DataObject::get_one(
@@ -611,8 +609,7 @@ class PermissionProviderFactory implements PermissionProvider
                 );
                 $permissionRolesToDelete = PermissionRole::get()
                     ->Filter($filter)
-                    ->Exclude(['ID' => $permissionRolesFirst->ID])
-                ;
+                    ->Exclude(['ID' => $permissionRolesFirst->ID]);
                 foreach ($permissionRolesToDelete as $permissionRoleToDelete) {
                     $this->showDebugMessage("DELETING double permission role {$this->getRoleTitle()}", 'deleted');
                     $permissionRoleToDelete->delete();
@@ -666,13 +663,11 @@ class PermissionProviderFactory implements PermissionProvider
                 );
                 $count = PermissionRoleCode::get()
                     ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
-                    ->Count()
-                ;
+                    ->Count();
                 if ($count > 1) {
                     $permissionRoleCodeObjectsToDelete = PermissionRoleCode::get()
                         ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
-                        ->Exclude(['ID' => $permissionRoleCodeObject->ID])
-                    ;
+                        ->Exclude(['ID' => $permissionRoleCodeObject->ID]);
                     foreach ($permissionRoleCodeObjectsToDelete as $permissionRoleCodeObjectToDelete) {
                         $this->showDebugMessage("DELETING double permission code {$permissionRoleCode} for " . $this->permissionRole->Title, 'deleted');
                         $permissionRoleCodeObjectToDelete->delete();
@@ -770,18 +765,23 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected function updatePassword()
     {
+        $passwordReset = false;
         if ($this->isNewMember && ! $this->password) {
+            $passwordReset = true;
             $this->addRandomPassword();
         }
 
         if ('' !== $this->password && ($this->isNewMember || $this->replaceExistingPassword)) {
+            $passwordReset = true;
             $this->member->changePassword($this->password);
             $this->member->write();
             if ($this->sendPasswordResetLink) {
                 $this->sendEmailToMember();
             }
         }
-        $this->member->PasswordExpiry = $this->forcePasswordReset ? date('Y-m-d') : null;
+        if ($passwordReset) {
+            $this->member->PasswordExpiry = $this->forcePasswordReset ? date('Y-m-d') : null;
+        }
         $this->member->write();
     }
 
@@ -805,8 +805,7 @@ class PermissionProviderFactory implements PermissionProvider
                 )
                 ->setFrom($from)
                 ->setTo($to)
-                ->setSubject($subject)
-            ;
+                ->setSubject($subject);
             //$email->send();
         }
 
