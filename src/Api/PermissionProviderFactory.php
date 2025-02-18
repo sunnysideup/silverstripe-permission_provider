@@ -23,127 +23,30 @@ class PermissionProviderFactory implements PermissionProvider
     use Injectable;
     use Configurable;
 
-    /**
-     * @var bool
-     */
-    protected static $debug = false;
-
-    /**
-     * @var string
-     */
-    protected $email = '';
-
-    /**
-     * @var string
-     */
-    protected $firstName = '';
-
-    /**
-     * @var string
-     */
-    protected $surname = '';
-
-    /**
-     * @var string
-     */
-    protected $password = '';
-
-    /**
-     * @var bool
-     */
-    protected $replaceExistingPassword = false;
-
-    /**
-     * @var bool
-     */
-    protected $forcePasswordReset = true;
-
-    /**
-     * @var string
-     */
-    protected $code = '';
-
-    /**
-     * @var string
-     */
-    protected $groupName = '';
-
-    /**
-     * @var Group|string
-     */
-    protected $parentGroup;
-
-    /**
-     * other group codes you are keen to merge.
-     *
-     * @var array
-     */
-    protected $mergeGroupCodes = [];
-
-    /**
-     * @var string
-     */
-    protected $permissionCode = '';
-
-    /**
-     * @var string
-     */
-    protected $roleTitle = '';
-
-    /**
-     * @var array
-     */
-    protected $otherRoleTitles = [];
-
-    /**
-     * @var array
-     */
-    protected $permissionArray = [];
-
-    /**
-     * @var null|DataObject|Member
-     */
-    protected $member;
-
-    /**
-     * @var null|DataObject|Group
-     */
-    protected $group;
-
-    /**
-     * @var null|DataObject|PermissionRole
-     */
-    protected $permissionRole;
-
-    /**
-     * @var bool
-     */
-    protected $sendPasswordResetLink = true;
-
-    /**
-     * @var string
-     */
-    protected $subjectNew = 'your login details has been set up';
-
-    /**
-     * @var string
-     */
-    protected $subjectExisting = 'your login details have been updated';
-
-    /**
-     * @var bool
-     */
-    protected $isNewMember = false;
-
-    /**
-     * @var int
-     */
-    protected $sort = 0;
-
-    /**
-     * @var string
-     */
-    protected $description = '';
+    protected static bool $debug = true;
+    protected string $email = '';
+    protected string $firstName = '';
+    protected string $surname = '';
+    protected string $password = '';
+    protected bool $replaceExistingPassword = false;
+    protected bool $forcePasswordReset = true;
+    protected string $code = '';
+    protected string $groupName = '';
+    protected Group|string $parentGroup;
+    protected array $mergeGroupCodes = [];
+    protected string $permissionCode = '';
+    protected string $roleTitle = '';
+    protected array $otherRoleTitles = [];
+    protected array $permissionArray = [];
+    protected ?Member $member = null;
+    protected ?Group $group = null;
+    protected ?PermissionRole $permissionRole = null;
+    protected bool $sendPasswordResetLink = true;
+    protected string $subjectNew = 'your login details has been set up';
+    protected string $subjectExisting = 'your login details have been updated';
+    protected bool $isNewMember = false;
+    protected int $sort = 0;
+    protected string $description = '';
 
     public static function set_debug(bool $b = true)
     {
@@ -155,7 +58,6 @@ class PermissionProviderFactory implements PermissionProvider
         $permissions = [];
         $groups = Group::get()->filter(['MainPermissionCode:not' => ['', null]]);
         foreach ($groups as $group) {
-            $parentGroup = $group->Parent();
             $category = 'Group based permissions';
             $permissions[$group->MainPermissionCode] = [
                 'name' => $group->Title,
@@ -359,7 +261,7 @@ class PermissionProviderFactory implements PermissionProvider
     public function setPermissionArray(array $permissionArray): PermissionProviderFactory
     {
         $this->permissionArray = $permissionArray;
-
+        $this->validatePermissionCodes();
         return $this;
     }
 
@@ -505,7 +407,7 @@ class PermissionProviderFactory implements PermissionProvider
     protected function addOrUpdateParentGroup()
     {
         $parentGroupStyle = 'updated';
-        if ($this->parentGroup) {
+        if (isset($this->parentGroup)) {
             $this->showDebugMessage('adding parent group');
             if (is_string($this->parentGroup)) {
                 $parentGroupName = $this->parentGroup;
@@ -539,8 +441,7 @@ class PermissionProviderFactory implements PermissionProvider
         if ($groupCodes !== [] && $this->group && $this->group->ID) {
             $doubleGroups = Group::get()
                 ->filter(['Code' => $groupCodes])
-                ->exclude(['ID' => (int) $this->group->ID])
-            ;
+                ->exclude(['ID' => (int) $this->group->ID]);
             if ($doubleGroups->exists()) {
                 $this->showDebugMessage($doubleGroups->count() . ' groups with the same name', 'deleted');
                 $realMembers = $this->group->Members();
@@ -592,6 +493,7 @@ class PermissionProviderFactory implements PermissionProvider
      */
     protected function addOrUpdateRole()
     {
+        $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
         if ('' !== $this->getRoleTitle()) {
             $code = $this->getPermissionCode();
             if ($code === '' || $code === '0') {
@@ -600,8 +502,7 @@ class PermissionProviderFactory implements PermissionProvider
             $filter = ['MainPermissionCode' => $code];
             $count = PermissionRole::get()
                 ->Filter($filter)
-                ->Count()
-            ;
+                ->Count();
             if ($count > 1) {
                 $this->showDebugMessage("There is more than one Permission Role with title {$this->getRoleTitle()} ({$count})", 'deleted');
                 $permissionRolesFirst = DataObject::get_one(
@@ -611,8 +512,7 @@ class PermissionProviderFactory implements PermissionProvider
                 );
                 $permissionRolesToDelete = PermissionRole::get()
                     ->Filter($filter)
-                    ->Exclude(['ID' => $permissionRolesFirst->ID])
-                ;
+                    ->Exclude(['ID' => $permissionRolesFirst->ID]);
                 foreach ($permissionRolesToDelete as $permissionRoleToDelete) {
                     $this->showDebugMessage("DELETING double permission role {$this->getRoleTitle()}", 'deleted');
                     $permissionRoleToDelete->delete();
@@ -647,7 +547,9 @@ class PermissionProviderFactory implements PermissionProvider
      */
     protected function addPermissionsToRole()
     {
+        $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
         if (null !== $this->permissionRole && (is_array($this->permissionArray) && count($this->permissionArray))) {
+            $this->validatePermissionCodes();
             $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
             $privilegedCodes = Permission::config()->privileged_permissions;
             foreach ($this->permissionArray as $permissionRoleCode) {
@@ -655,24 +557,25 @@ class PermissionProviderFactory implements PermissionProvider
                     continue;
                 }
                 if (in_array($permissionRoleCode, $privilegedCodes)) {
+                    $this->showDebugMessage('CAREFUL ' . $permissionRoleCode . ' as it is a privileged code');
                     DataObject::config()->set('validation_enabled', false);
                 } else {
                     DataObject::config()->set('validation_enabled', true);
                 }
+                $filter = ['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID];
                 $permissionRoleCodeObject = DataObject::get_one(
                     PermissionRoleCode::class,
-                    ['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID],
+                    $filter,
                     $cacheDataObjectGetOne = false
                 );
                 $count = PermissionRoleCode::get()
-                    ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
-                    ->Count()
-                ;
+                    ->Filter($filter)
+                    ->Count();
+                $action = 'updated';
                 if ($count > 1) {
                     $permissionRoleCodeObjectsToDelete = PermissionRoleCode::get()
-                        ->Filter(['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID])
-                        ->Exclude(['ID' => $permissionRoleCodeObject->ID])
-                    ;
+                        ->Filter($filter)
+                        ->Exclude(['ID' => $permissionRoleCodeObject->ID]);
                     foreach ($permissionRoleCodeObjectsToDelete as $permissionRoleCodeObjectToDelete) {
                         $this->showDebugMessage("DELETING double permission code {$permissionRoleCode} for " . $this->permissionRole->Title, 'deleted');
                         $permissionRoleCodeObjectToDelete->delete();
@@ -681,15 +584,12 @@ class PermissionProviderFactory implements PermissionProvider
                     $this->showDebugMessage('
                             There is more than one Permission Role Code in ' . $this->permissionRole->Title . "
                             with Code = {$permissionRoleCode} ({$count})", 'deleted');
-                } elseif (1 === $count) {
-                    //do nothing
-                } else {
-                    $permissionRoleCodeObject = PermissionRoleCode::create();
-                    $permissionRoleCodeObject->Code = $permissionRoleCode;
-                    $permissionRoleCodeObject->RoleID = $this->permissionRole->ID;
+                } elseif (1 > $count) {
+                    $action = 'adding';
+                    $permissionRoleCodeObject = PermissionRoleCode::create($filter);
                 }
 
-                $this->showDebugMessage('adding ' . $permissionRoleCodeObject->Code . ' to ' . $this->permissionRole->Title);
+                $this->showDebugMessage($action . ' ' . $permissionRoleCodeObject->Code . ' to ' . $this->permissionRole->Title);
                 $permissionRoleCodeObject->write();
             }
         }
@@ -805,8 +705,7 @@ class PermissionProviderFactory implements PermissionProvider
                 )
                 ->setFrom($from)
                 ->setTo($to)
-                ->setSubject($subject)
-            ;
+                ->setSubject($subject);
             //$email->send();
         }
 
@@ -817,6 +716,28 @@ class PermissionProviderFactory implements PermissionProvider
     {
         if (self::$debug) {
             DB::alteration_message($message, $style);
+        }
+    }
+
+    protected function validatePermissionCodes()
+    {
+        /**
+         * @var  array $codes
+         */
+        $codes = Permission::get_codes(false);
+        foreach ($this->permissionArray as $key => $code) {
+            if (!isset($code, $codes)) {
+                if (class_exists($code)) {
+                    $this->permissionArray[$key] = 'CMS_ACCESS_' . $code;
+                }
+
+                user_error(
+                    "
+                        Permission code $code is not valid.
+                        The available codes are: " .
+                        implode(', ', array_keys($codes))
+                );
+            }
         }
     }
 }
