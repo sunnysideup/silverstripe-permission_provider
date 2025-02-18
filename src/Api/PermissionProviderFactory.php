@@ -23,7 +23,7 @@ class PermissionProviderFactory implements PermissionProvider
     use Injectable;
     use Configurable;
 
-    protected static bool $debug = true;
+    protected static bool $debug = false;
     protected string $email = '';
     protected string $firstName = '';
     protected string $surname = '';
@@ -670,18 +670,23 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected function updatePassword()
     {
+        $passwordReset = false;
         if ($this->isNewMember && ! $this->password) {
+            $passwordReset = true;
             $this->addRandomPassword();
         }
 
         if ('' !== $this->password && ($this->isNewMember || $this->replaceExistingPassword)) {
+            $passwordReset = true;
             $this->member->changePassword($this->password);
             $this->member->write();
             if ($this->sendPasswordResetLink) {
                 $this->sendEmailToMember();
             }
         }
-        $this->member->PasswordExpiry = $this->forcePasswordReset ? date('Y-m-d') : null;
+        if ($passwordReset) {
+            $this->member->PasswordExpiry = $this->forcePasswordReset ? date('Y-m-d') : null;
+        }
         $this->member->write();
     }
 
