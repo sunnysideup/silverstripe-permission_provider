@@ -10,7 +10,7 @@ use SilverStripe\Security\Security;
 /**
  * Class \Sunnysideup\PermissionProvider\Extensions\GenericCanMethodExtension
  *
- * @property GenericCanMethodExtension $owner
+ * @property Signatory|GenericCanMethodExtension $owner
  */
 class GenericCanMethodExtension extends Extension
 {
@@ -95,8 +95,8 @@ class GenericCanMethodExtension extends Extension
         $name = $owner->i18n_plural_name();
         $perms = [];
         $perms[$code . '_CAN_CREATE'] = [
-            'name' => 'Create ' . $owner->i18n_singular_name(),
-            'category' => 'Create Records',
+            'name' => 'Create ' . $name,
+            'category' => $name
             // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
             // 'sort' => -100
         ];
@@ -108,14 +108,14 @@ class GenericCanMethodExtension extends Extension
         ];
         $perms[$code . '_CAN_EDIT'] = [
             'name' => 'Edit ' . $name,
-            'category' => 'Edit Records',
+            'category' => $name,
             // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
             // 'sort' => -100
         ];
         if ($owner->hasMethod('hasStages') && $owner->hasStages()) {
             $perms[$code . '_CAN_PUBLISH'] = [
                 'name' => 'Publish ' . $name,
-                'category' => 'Publish Records',
+                'category' => $name,
                 // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
                 // 'sort' => -100
             ];
@@ -123,7 +123,7 @@ class GenericCanMethodExtension extends Extension
         if ($owner->hasMethod('MembersForPermissionCheck')) {
             $perms[$code . '_CAN_EDIT_AS_OWNER'] = [
                 'name' => 'Edit ' . $name . ' as owner of record',
-                'category' => 'Edit Records',
+                'category' => $name,
                 // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
                 // 'sort' => -100
             ];
@@ -131,7 +131,7 @@ class GenericCanMethodExtension extends Extension
         if ($owner->hasMethod('OwnersForPermissionCheck')) {
             $perms[$code . '_CAN_EDIT_AS_MEMBER'] = [
                 'name' => 'Edit ' . $name . ' as member of record',
-                'category' => 'Edit Records',
+                'category' => $name,
                 // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
                 // 'sort' => -100
             ];
@@ -139,7 +139,7 @@ class GenericCanMethodExtension extends Extension
 
         $perms[$code . '_CAN_DELETE'] = [
             'name' => 'Delete ' . $name,
-            'category' => 'Delete Records',
+            'category' => $name,
             // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
             // 'sort' => -100
         ];
