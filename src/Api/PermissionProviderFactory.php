@@ -413,13 +413,15 @@ class PermissionProviderFactory implements PermissionProvider
                 $parentGroupName = $this->parentGroup;
                 $code = $this->codeToCleanCode($parentGroupName);
                 $filter = ['Title' => $parentGroupName, 'Code' => $code];
-                $this->parentGroup = Group::get()->filterAny($filter)->first();
-                if (null === $this->parentGroup) {
+                $candidate = Group::get()->filterAny($filter)->first();
+                if (null === $candidate) {
                     $this->parentGroup = Group::create($filter);
                     $parentGroupStyle = 'created';
                     $this->parentGroup->Title = $parentGroupName;
                     $this->parentGroup->write();
                     $this->showDebugMessage("{$parentGroupStyle} {$parentGroupName}");
+                } else {
+                    $this->parentGroup = $candidate;
                 }
             }
 
