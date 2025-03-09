@@ -72,12 +72,18 @@ use Sunnysideup\PermissionProvider\Traits\GenericCanMethodTrait;
 
 class MyDataObject extends DataObject implements PermissionProvider
 {
+    /**
+     * This adds the basic canMethods
+     */
     private static array $extensions = [
         GenericCanMethodTrait::class,
     ];
 
-    private static $table_name = 'Unique';
+    private static $table_name = 'MyDataObject';
         
+    /**
+     * implements PermissionProvider to ensure all permissions are added.
+     */
     public function providePermissions()
     {
         return $this->providePermissionsHelper();
@@ -100,20 +106,53 @@ class MyDataObject extends DataObject implements PermissionProvider
     // the following code is ALL OPTIONAL EXTRAS....
     ##########################
 
-
+    /**
+     * This can be anything relating to Members or Owners
+     * Just here as an example.
+     */
     private static $has_many = [
         'Members' => Member::class,
         'Owners' => Member::class,
     ];
 
+    /**
+     * only implement this if you like this to be added. not required!
+     */
     protected function MembersForPermissionCheck(): DataList
     {
         return $this->Members();
     }
 
+    /**
+     * only implement this if you like this to be added. not required!
+     */
     protected function OwnersForPermissionCheck(): DataList
     {
         return $this->Owners();
+    }
+
+    /**
+     * ensure group, permission and role is created.
+     */
+    public function requireDefaultRecords()
+    {
+        parent::requireDefaultRecords();
+        $group = PermissionProviderFactory::inst()
+            ->setGroupName('Research Managers') // required
+            ->setPermissionCode('CMS_ACCESS_RESEARCH_ADMIN') // optional
+            ->setRoleTitle('Research Manager Privileges') // optional
+            ->setPermissionArray(
+                [
+                    'UNIQUE_CAN_CREATE',
+                    'UNIQUE_CAN_VIEW',
+                    // etc....
+                ]
+            )
+            ->CreateGroupAndMember();
+            // ->CreateDefaultMember();
+            // ->CreateGroup();
+            // ->AddMemberToGroup($member);
+
     }
 }
 ```
