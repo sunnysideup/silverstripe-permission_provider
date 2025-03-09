@@ -6,6 +6,7 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
 use SilverStripe\Core\Extension;
+use SilverStripe\Forms\LiteralField;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
@@ -51,6 +52,18 @@ class GroupExtension extends Extension
                     ->setDescription('Optional. This is the link that the user, who belongs to this group, will be redirected to after login. If they belong to more than one group with redirection then you can not sure how they will be redirected.'),
             ]
         );
+        if ($this->IsCreatedThroughFactory()) {
+            $fields->addFieldToTab(
+                'Root.Main',
+                LiteralField::create(
+                    'CodeWarning',
+                    '<p class="message warning">
+                        This group is manage through the code base.
+                        Any changes made here maybe reverted if it contradicts the requirements in the code.
+                    </p>'
+                )
+            );
+        }
     }
 
     public function requireDefaultRecords()
@@ -64,18 +77,6 @@ class GroupExtension extends Extension
         return (bool) $this->getOwner()->MainPermissionCode;
     }
 
-    /**
-     * DataObject delete permissions
-     * @param Member $member
-     * @return null|boolean
-     */
-    public function canEdit($member = null)
-    {
-        if ($this->IsCreatedThroughFactory()) {
-            return false;
-        }
-        return null;
-    }
 
     /**
      * DataObject delete permissions
