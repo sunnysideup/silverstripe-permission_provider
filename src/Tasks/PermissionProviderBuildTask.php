@@ -33,7 +33,7 @@ class PermissionProviderBuildTask extends BuildTask
         $this->createDefaultPermissions();
         $this->deletePermissionsNoLongerRequired();
         $this->removeObsoletePermissionCodeRoles();
-        echo 'done';
+        DB::alteration_message('All permissions aligned', 'created');
     }
 
     protected function createDefaultPermissions()
