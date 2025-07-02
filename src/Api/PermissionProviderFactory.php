@@ -648,7 +648,7 @@ class PermissionProviderFactory implements PermissionProvider
         }
 
         if ('' === $this->groupName) {
-            $number = rand(0, 99999999);
+            $number = rand();
             $this->groupName = 'New Group ' . $number;
         }
     }
