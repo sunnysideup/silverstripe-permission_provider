@@ -1,6 +1,9 @@
 ---
 name: permision_provider
 ---
+SilverStripe\Security\Member:
+  extensions:
+    - Sunnysideup\PermissionProvider\Extensions\MemberExtension
 SilverStripe\Security\Group:
   extensions:
     - Sunnysideup\PermissionProvider\Extensions\GroupExtension
