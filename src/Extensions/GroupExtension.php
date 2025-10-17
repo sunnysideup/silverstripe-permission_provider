@@ -15,8 +15,8 @@ use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
  * Class \Sunnysideup\PermissionProvider\Extensions\GroupExtension.
  *
  * @property Group|GroupExtension $owner
- * @property string $MainPermissionCode
- * @property string $DefaultLoginLink
+ * @property ?string $MainPermissionCode
+ * @property ?string $DefaultLoginLink
  */
 class GroupExtension extends Extension
 {

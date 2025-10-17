@@ -10,6 +10,8 @@ use SilverStripe\Security\Member;
 
 /**
  * Class \Sunnysideup\PermissionProvider\Extensions\MemberExtension.
+ *
+ * @property Member|MemberExtension $owner
  * @property bool $IsPermissionProviderCreated
  */
 class MemberExtension extends Extension

@@ -12,7 +12,7 @@ use SilverStripe\Security\Member;
  * Class \Sunnysideup\PermissionProvider\Extensions\GroupExtension.
  *
  * @property PermissionRole|RoleExtension $owner
- * @property string $MainPermissionCode
+ * @property ?string $MainPermissionCode
  */
 class RoleExtension extends Extension
 {
