@@ -1,5 +1,5 @@
 ---
-name: permision_provider
+name: permission_provider
 ---
 SilverStripe\Security\Member:
   extensions:
