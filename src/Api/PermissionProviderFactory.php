@@ -90,12 +90,12 @@ class PermissionProviderFactory implements PermissionProvider
             $baseURL = str_replace('http://', '', (string) $baseURL);
             $baseURL = trim((string) $baseURL, '/');
             $baseURL = trim($baseURL, '/');
-            $before = strtolower((string) $this->email ?: $this->getFirstName() . '.' . $this->getSurname());
+            $before = strtolower($this->email ?: $this->getFirstName() . '.' . $this->getSurname());
             $before = strtolower(preg_replace('#[^\pL\pN]+#u', '-', $before));
             $this->email = $before . '@' . $baseURL;
         }
 
-        return (string) $this->email;
+        return $this->email;
     }
 
     public function setFirstName(string $firstName): PermissionProviderFactory
@@ -177,7 +177,7 @@ class PermissionProviderFactory implements PermissionProvider
 
     public function getCode(): string
     {
-        if (! $this->code) {
+        if ($this->code === '' || $this->code === '0') {
             $this->code = $this->groupName;
             $this->code = str_replace(' ', '_', $this->code);
             $this->code = preg_replace('#[\\W_]+#u', '', (string) $this->code);
@@ -551,7 +551,7 @@ class PermissionProviderFactory implements PermissionProvider
     protected function addPermissionsToRole()
     {
         $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
-        if (null !== $this->permissionRole && (is_array($this->permissionArray) && count($this->permissionArray))) {
+        if ($this->permissionRole instanceof \SilverStripe\Security\PermissionRole && (is_array($this->permissionArray) && count($this->permissionArray))) {
             $this->validatePermissionCodes();
             $this->showDebugMessage('working with ' . implode(', ', $this->permissionArray));
             $privilegedCodes = Permission::config()->privileged_permissions;
@@ -643,7 +643,7 @@ class PermissionProviderFactory implements PermissionProvider
             'permissionCode',
         ];
         foreach ($requiredFields as $requiredField) {
-            if (! $this->{$requiredField}) {
+            if ($this->{$requiredField} === '' || $this->{$requiredField} === '0') {
                 user_error('Please provide ' . $requiredField);
             }
         }
