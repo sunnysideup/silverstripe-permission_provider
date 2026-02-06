@@ -24,28 +24,51 @@ class PermissionProviderFactory implements PermissionProvider
     use Configurable;
 
     protected static bool $debug = false;
+
     protected string $email = '';
+
     protected string $firstName = '';
+
     protected string $surname = '';
+
     protected string $password = '';
+
     protected bool $replaceExistingPassword = false;
+
     protected bool $forcePasswordReset = true;
+
     protected string $code = '';
+
     protected string $groupName = '';
+
     protected Group|string $parentGroup;
+
     protected array $mergeGroupCodes = [];
+
     protected string $permissionCode = '';
+
     protected string $roleTitle = '';
+
     protected array $otherRoleTitles = [];
+
     protected array $permissionArray = [];
+
     protected ?Member $member = null;
+
     protected ?Group $group = null;
+
     protected ?PermissionRole $permissionRole = null;
+
     protected bool $sendPasswordResetLink = true;
+
     protected string $subjectNew = 'your login details has been set up';
+
     protected string $subjectExisting = 'your login details have been updated';
+
     protected bool $isNewMember = false;
+
     protected int $sort = 0;
+
     protected string $description = '';
 
     public static function set_debug(bool $b = true)
@@ -734,7 +757,7 @@ class PermissionProviderFactory implements PermissionProvider
          */
         $codes = Permission::get_codes(false);
         foreach ($this->permissionArray as $key => $code) {
-            if (!isset($code, $codes)) {
+            if (! isset($code, $codes)) {
                 if (class_exists($code)) {
                     $this->permissionArray[$key] = 'CMS_ACCESS_' . $code;
                 }

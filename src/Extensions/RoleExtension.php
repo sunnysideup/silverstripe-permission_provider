@@ -2,10 +2,9 @@
 
 namespace Sunnysideup\PermissionProvider\Extensions;
 
+use SilverStripe\Core\Extension;
 use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\ReadonlyField;
-use SilverStripe\Core\Extension;
-use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 
 /**

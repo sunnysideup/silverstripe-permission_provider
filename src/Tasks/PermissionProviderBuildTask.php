@@ -51,9 +51,7 @@ class PermissionProviderBuildTask extends BuildTask
     }
 
     /**
-     *
      * @todo: fix
-     * @return void
      */
     protected function deletePermissionsNoLongerRequired()
     {

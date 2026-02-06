@@ -2,10 +2,8 @@
 
 namespace Sunnysideup\PermissionProvider\Extensions;
 
-use SilverStripe\Forms\FieldList;
 use SilverStripe\Core\Extension;
-use SilverStripe\ORM\DB;
-use SilverStripe\Security\Group;
+use SilverStripe\Forms\FieldList;
 use SilverStripe\Security\Member;
 
 /**
@@ -16,7 +14,6 @@ use SilverStripe\Security\Member;
  */
 class MemberExtension extends Extension
 {
-
     private static $db = [
         'IsPermissionProviderCreated' => 'Boolean',
     ];
@@ -26,7 +23,7 @@ class MemberExtension extends Extension
         $owner = $this->getOwner();
         if ($owner->exists() && $owner->IsPermissionProviderCreated && $owner->isChanged('Email')) {
             $oldMember = Member::get()->byID($owner->ID);
-            if($oldMember && $oldMember->Email) {
+            if ($oldMember && $oldMember->Email) {
                 //reset all login links
                 $owner->Email = $oldMember->Email;
             }
