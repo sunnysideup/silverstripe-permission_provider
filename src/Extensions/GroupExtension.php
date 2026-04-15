@@ -66,7 +66,7 @@ class GroupExtension extends Extension
         }
     }
 
-    public function requireDefaultRecords()
+    public function onRequireDefaultRecords()
     {
         $obj = PermissionProviderBuildTask::create();
         $obj->run(null);
@@ -87,6 +87,7 @@ class GroupExtension extends Extension
         if ($this->IsCreatedThroughFactory()) {
             return false;
         }
+
         return null;
     }
 }

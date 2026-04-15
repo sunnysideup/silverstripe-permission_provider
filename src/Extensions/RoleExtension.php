@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Sunnysideup\PermissionProvider\Extensions;
 
 use SilverStripe\Core\Extension;
@@ -49,6 +51,7 @@ class RoleExtension extends Extension
         if ($this->IsCreatedThroughFactory()) {
             return false;
         }
+
         return null;
     }
 
@@ -62,6 +65,7 @@ class RoleExtension extends Extension
         if ($this->IsCreatedThroughFactory()) {
             return false;
         }
+
         return null;
     }
 }

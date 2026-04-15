@@ -13,7 +13,7 @@ use Sunnysideup\PermissionProvider\Interfaces\PermissionProviderFactoryProvider;
 
 class PermissionProviderBuildTask extends BuildTask
 {
-    protected $title = 'Create Default Permissions';
+    protected string $title = 'Create Default Permissions';
 
     protected $description = 'Goes through all the permissions and cleans them up, then creates all the default ones.';
 
