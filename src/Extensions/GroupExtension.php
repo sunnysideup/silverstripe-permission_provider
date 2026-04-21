@@ -7,9 +7,12 @@ use SilverStripe\Forms\FieldList;
 use SilverStripe\Forms\LiteralField;
 use SilverStripe\Forms\ReadonlyField;
 use SilverStripe\Forms\TextField;
+use SilverStripe\PolyExecution\PolyOutput;
 use SilverStripe\Security\Group;
 use SilverStripe\Security\Member;
 use Sunnysideup\PermissionProvider\Tasks\PermissionProviderBuildTask;
+use Symfony\Component\Console\Input\ArrayInput;
+use Symfony\Component\Console\Input\InputDefinition;
 
 /**
  * Class \Sunnysideup\PermissionProvider\Extensions\GroupExtension.
@@ -68,8 +71,11 @@ class GroupExtension extends Extension
 
     public function onRequireDefaultRecords()
     {
-        $obj = PermissionProviderBuildTask::create();
-        $obj->run(null);
+        $task = PermissionProviderBuildTask::create();
+        $definition = new InputDefinition($task->getOptions());
+        $input = new ArrayInput([], $definition);
+        $output = PolyOutput::create(PolyOutput::FORMAT_ANSI);
+        $task->run($input, $output);
     }
 
     public function IsCreatedThroughFactory(): bool
