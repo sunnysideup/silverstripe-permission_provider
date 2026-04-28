@@ -333,11 +333,7 @@ class PermissionProviderFactory implements PermissionProvider
         $this->isNewMember = false;
 
         // @property Member|null $member
-        $this->member = Member::get_one(
-            Member::class,
-            $filter,
-            $cacheDataObjectGetOne = false
-        );
+        $this->member = Member::get()->setUseCache($cacheDataObjectGetOne = false)->filter($filter)->first();
         if (! $this->member) {
             $this->isNewMember = true;
             // @property Member $member
@@ -532,11 +528,7 @@ class PermissionProviderFactory implements PermissionProvider
                 ->Count();
             if ($count > 1) {
                 $this->showDebugMessage(sprintf('There is more than one Permission Role with title %s (%d)', $this->getRoleTitle(), $count), 'deleted');
-                $permissionRolesFirst = DataObject::get_one(
-                    PermissionRole::class,
-                    $filter,
-                    $cacheDataObjectGetOne = false
-                );
+                $permissionRolesFirst = PermissionRole::get()->setUseCache($cacheDataObjectGetOne = false)->filter($filter)->first();
                 $permissionRolesToDelete = PermissionRole::get()
                     ->Filter($filter)
                     ->Exclude(['ID' => $permissionRolesFirst->ID]);
@@ -560,11 +552,7 @@ class PermissionProviderFactory implements PermissionProvider
 
             if (! $this->permissionRole instanceof PermissionRole) {
                 // @property PermissionRole|null $permissionRole
-                $this->permissionRole = DataObject::get_one(
-                    PermissionRole::class,
-                    $filter,
-                    $cacheDataObjectGetOne = false
-                );
+                $this->permissionRole = PermissionRole::get()->setUseCache($cacheDataObjectGetOne = false)->filter($filter)->first();
             }
         }
     }
@@ -592,11 +580,7 @@ class PermissionProviderFactory implements PermissionProvider
                 }
 
                 $filter = ['Code' => $permissionRoleCode, 'RoleID' => $this->permissionRole->ID];
-                $permissionRoleCodeObject = DataObject::get_one(
-                    PermissionRoleCode::class,
-                    $filter,
-                    $cacheDataObjectGetOne = false
-                );
+                $permissionRoleCodeObject = PermissionRoleCode::get()->setUseCache($cacheDataObjectGetOne = false)->filter($filter)->first();
                 $count = PermissionRoleCode::get()
                     ->Filter($filter)
                     ->Count();
@@ -632,11 +616,7 @@ class PermissionProviderFactory implements PermissionProvider
     protected function addOtherRolesToGroup()
     {
         foreach ($this->otherRoleTitles as $roleObjectTitle) {
-            $roleObject = DataObject::get_one(
-                PermissionRole::class,
-                ['Title' => $roleObjectTitle],
-                $cacheDataObjectGetOne = true
-            );
+            $roleObject = PermissionRole::get()->setUseCache($cacheDataObjectGetOne = true)->filter(['Title' => $roleObjectTitle])->first();
             $this->addRoleToGroupInner();
         }
     }
