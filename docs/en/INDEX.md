@@ -68,7 +68,7 @@ PermissionProviderFactory::inst()
 ```php
 
 use SilverStripe\Security\PermissionProvider;
-use Sunnysideup\PermissionProvider\Traits\GenericCanMethodTrait;
+use Sunnysideup\PermissionProvider\Extensions\GenericCanMethodExtension;
 
 class MyDataObject extends DataObject implements PermissionProvider
 {
@@ -76,7 +76,7 @@ class MyDataObject extends DataObject implements PermissionProvider
      * This adds the basic canMethods
      */
     private static array $extensions = [
-        GenericCanMethodTrait::class,
+        GenericCanMethodExtension::class,
     ];
 
     private static $table_name = 'MyDataObject';
