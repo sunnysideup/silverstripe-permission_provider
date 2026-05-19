@@ -10,7 +10,7 @@ use SilverStripe\Security\Security;
 /**
  * Class \Sunnysideup\PermissionProvider\Extensions\GenericCanMethodExtension
  *
- * @property Signatory|GenericCanMethodExtension $owner
+ * @property GenericCanMethodExtension $owner
  */
 class GenericCanMethodExtension extends Extension
 {
@@ -63,8 +63,25 @@ class GenericCanMethodExtension extends Extension
     public function canPublish($member = null)
     {
         $owner = $this->getOwner();
-        if ($owner->canEdit($member) && $owner->genericCanMethod('publish', $member)) {
-            return true;
+        if ($owner->canEdit($member)) {
+            if ($owner->genericCanMethod('publish', $member)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
+        return null;
+    }
+
+    public function canUnpublish($member = null)
+    {
+        $owner = $this->getOwner();
+        if ($owner->canEdit($member)) {
+            if ($owner->genericCanMethod('unpublish', $member)) {
+                return true;
+            } else {
+                return false;
+            }
         }
         return null;
     }
@@ -115,6 +132,14 @@ class GenericCanMethodExtension extends Extension
         if ($owner->hasMethod('hasStages') && $owner->hasStages()) {
             $perms[$code . '_CAN_PUBLISH'] = [
                 'name' => 'Publish ' . $name,
+                'category' => 'Publish Records',
+                // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
+                // 'sort' => -100
+            ];
+        }
+        if ($owner->hasMethod('hasStages') && $owner->hasStages()) {
+            $perms[$code . '_CAN_UNPUBLISH'] = [
+                'name' => 'Unpublish ' . $name,
                 'category' => 'Publish Records',
                 // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
                 // 'sort' => -100
