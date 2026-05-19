@@ -213,3 +213,28 @@ $group = PermissionProviderFactory::inst()
 ```
 
 
+## advanced permissions
+
+Sometimes you have a data object that in general can not be `CRUDeted` by a group of some sort, but there may be exceptions (e.g. the specific member can edit their own record). For this you can implement the following methods on your DataObject:
+
+```php
+
+    /**
+     * only implement this if you like this to be added. not required!
+     */
+    protected function MembersForPermissionCheck(): DataList
+    {
+        return $this->Members();
+    }
+
+    /**
+     * only implement this if you like this to be added. not required!
+     */
+    protected function OwnersForPermissionCheck(): DataList
+    {
+        return $this->Owners();
+    }
+```
+
+If the current user is in these datalists then they will have additional priviledges to edit the record at hand. 
+
