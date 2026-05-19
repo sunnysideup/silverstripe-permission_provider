@@ -157,6 +157,40 @@ class MyDataObject extends DataObject implements PermissionProvider
 }
 ```
 
+For ModelAdmins you can do something like this:
+
+```php
+use SilverStripe\Admin\ModelAdmin;
+use SilverStripe\Security\PermissionProvider;
+
+class ProductAdmin extends ModelAdmin implements PermissionProvider
+{
+    private static $managed_models = [
+        Product::class,
+    ];
+
+    private static $url_segment = 'products';
+    private static $menu_title = 'Products';
+
+    // 1. Restrict access to users with this specific permission code
+    private static $required_permission_codes = 'CMS_ACCESS_ProductAdmin';
+
+    // 2. Register the permission so it appears in the Security/Roles UI
+    public function providePermissions()
+    {
+        return [
+            'CMS_ACCESS_ProductAdmin' => [
+                'name' => 'Access to Products Admin',
+                'category' => 'CMS Access',
+                'help' => 'Allow user to access the Products section in the CMS.'
+            ]
+        ];
+    }
+}
+
+```
+
+
 Once this is set up you can then grant access for a specific group like this:
 
 ```php
@@ -177,3 +211,5 @@ $group = PermissionProviderFactory::inst()
     // ->AddMemberToGroup($member);
 
 ```
+
+
