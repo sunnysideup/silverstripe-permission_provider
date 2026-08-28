@@ -24,6 +24,8 @@ class PermissionProviderBuildTask extends BuildTask
      */
     protected $_permissions = [];
 
+    private static $segment = 'permissionproviderbuildtask';
+
     /**
      * @param null|HTTPRequest $request
      */
