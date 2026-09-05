@@ -11,6 +11,7 @@ use SilverStripe\Security\Security;
  * Class \Sunnysideup\PermissionProvider\Extensions\GenericCanMethodExtension
  *
  * @property GenericCanMethodExtension $owner
+ * @method hasMethod(string $methodName): bool
  */
 class GenericCanMethodExtension extends Extension
 {
@@ -20,6 +21,11 @@ class GenericCanMethodExtension extends Extension
         $code = $owner->getPermissionCodeForThisClass() . '_CAN_' . strtoupper($methodName);
         if (Permission::check($code, 'any', $member)) {
             return true;
+        }
+        $extendedMethodName = 'can'.$methodName . 'Extended';
+        $outcome = $owner->hasMethod($extendedMethodName) ? $owner->$extendedMethodName() : null;
+        if ($outcome !== null) {
+            return $outcome;
         }
         return null;
     }
@@ -108,7 +114,7 @@ class GenericCanMethodExtension extends Extension
     public function providePermissionsHelper(): array
     {
         $owner = $this->getOwner();
-        $code = $this->getPermissionCodeForThisClass();
+        $code = $owner->getPermissionCodeForThisClass();
         $name = $owner->i18n_plural_name();
         $perms = [];
         $perms[$code . '_CAN_CREATE'] = [
