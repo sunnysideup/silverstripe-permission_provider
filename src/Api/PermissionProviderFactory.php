@@ -53,6 +53,8 @@ class PermissionProviderFactory implements PermissionProvider
 
     protected array $permissionArray = [];
 
+    protected bool $removeUnlistedPermissions = true;
+
     protected ?Member $member = null;
 
     protected ?Group $group = null;
@@ -66,6 +68,7 @@ class PermissionProviderFactory implements PermissionProvider
     protected string $subjectExisting = 'your login details have been updated';
 
     protected bool $isNewMember = false;
+
 
     protected int $sort = 0;
 
@@ -287,6 +290,12 @@ class PermissionProviderFactory implements PermissionProvider
         $this->validatePermissionCodes();
         return $this;
     }
+    public function setRemoveUnlistedPermissions(bool $b): PermissionProviderFactory
+    {
+        $this->removeUnlistedPermissions = $b;
+
+        return $this;
+    }
 
     public function setMember(Member $member): PermissionProviderFactory
     {
@@ -404,6 +413,7 @@ class PermissionProviderFactory implements PermissionProvider
         $this->grantPermissions();
         $this->addOrUpdateRole();
         $this->addPermissionsToRole();
+        $this->removeUnlistedPermissionsFromRole();   // <-- add this line
         $this->addRoleToGroup();
 
         return $this->group;
@@ -620,7 +630,43 @@ class PermissionProviderFactory implements PermissionProvider
             }
         }
     }
+    /**
+     * remove PermissionRoleCode entries on this role that are no longer
+     * listed in $this->permissionArray.
+     */
+    protected function removeUnlistedPermissionsFromRole()
+    {
+        $this->showDebugMessage('=== ' . __FUNCTION__ . ' ===');
+        if (! $this->removeUnlistedPermissions) {
+            $this->showDebugMessage('skipping removal of unlisted permissions (disabled)');
+            return;
+        }
+        if (! $this->permissionRole instanceof PermissionRole) {
+            return;
+        }
 
+        // $this->permissionArray already contains getPermissionCode(),
+        // because grantPermissions() appended it before we got here.
+        $keepCodes = array_values(array_unique(array_filter($this->permissionArray)));
+
+        $list = PermissionRoleCode::get()
+            ->filter(['RoleID' => (int) $this->permissionRole->ID]);
+
+        // exclude([] ) is unreliable in the ORM, so only apply it when we
+        // actually have codes to keep; an empty keep-list means "remove all".
+        if ($keepCodes !== []) {
+            $list = $list->exclude(['Code' => $keepCodes]);
+        }
+
+        foreach ($list as $permissionRoleCodeObject) {
+            $this->showDebugMessage(
+                'REMOVING permission code ' . $permissionRoleCodeObject->Code .
+                    ' from role ' . $this->permissionRole->Title,
+                'deleted'
+            );
+            $permissionRoleCodeObject->delete();
+        }
+    }
     protected function addRoleToGroup()
     {
         $this->addRoleToGroupInner();
