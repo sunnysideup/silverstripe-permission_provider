@@ -93,7 +93,8 @@ class GenericCanMethodExtension extends Extension
     }
 
     /**
-     * for canDelete, we see if it returns true, but if not, we just return canEdit as a proxy.
+     * for canDelete, the member must be able to edit the record AND have the specific delete permission
+     * (same as canPublish). If not, we return null so that other extensions / the default can decide.
      *
      * @param Member $member
      * @return boolean|null
@@ -101,7 +102,7 @@ class GenericCanMethodExtension extends Extension
     public function canDelete($member = null)
     {
         $owner = $this->getOwner();
-        if ($owner->canEdit($member) && ! $owner->genericCanMethod('delete', $member)) {
+        if ($owner->canEdit($member) && $owner->genericCanMethod('delete', $member)) {
             return true;
         }
         return null;

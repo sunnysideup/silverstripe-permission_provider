@@ -166,7 +166,7 @@ class PermissionProviderFactory implements PermissionProvider
     {
         $pass = [];
         for ($i = 0; $i < 23; ++$i) {
-            $pass[] = chr(rand(32, 126));
+            $pass[] = chr(random_int(32, 126));
         }
 
         $this->password = implode('', $pass);
