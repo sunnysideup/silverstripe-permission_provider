@@ -2,6 +2,7 @@
 
 namespace Sunnysideup\PermissionProvider\Extensions;
 
+use SilverStripe\Control\Director;
 use SilverStripe\Core\Config\Config;
 use SilverStripe\Core\Extension;
 use SilverStripe\Security\Member;
@@ -19,7 +20,8 @@ class LoginHandlerExtension extends Extension
     {
         if ($member instanceof Member) {
             $redirectorGroup = $member->Groups()->filter('DefaultLoginLink:not', null)->first();
-            if ($redirectorGroup) {
+            // only ever redirect to a page on this site.
+            if ($redirectorGroup && Director::is_site_url((string) $redirectorGroup->DefaultLoginLink)) {
                 Config::modify()->set(
                     Security::class,
                     'default_login_dest',

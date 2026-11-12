@@ -10,7 +10,8 @@ use SilverStripe\Security\Security;
 /**
  * Class \Sunnysideup\PermissionProvider\Extensions\GenericCanMethodExtension
  *
- * @property Signatory|GenericCanMethodExtension $owner
+ * @property GenericCanMethodExtension $owner
+ * @method hasMethod(string $methodName): bool
  */
 class GenericCanMethodExtension extends Extension
 {
@@ -21,7 +22,11 @@ class GenericCanMethodExtension extends Extension
         if (Permission::check($code, 'any', $member)) {
             return true;
         }
-
+        $extendedMethodName = 'can'.$methodName . 'Extended';
+        $outcome = $owner->hasMethod($extendedMethodName) ? $owner->$extendedMethodName() : null;
+        if ($outcome !== null) {
+            return $outcome;
+        }
         return null;
     }
 
@@ -31,7 +36,6 @@ class GenericCanMethodExtension extends Extension
         if ($owner->genericCanMethod('create', $member)) {
             return true;
         }
-
         return null;
     }
 
@@ -41,11 +45,9 @@ class GenericCanMethodExtension extends Extension
         if ($owner->canEdit($member)) {
             return true;
         }
-
         if ($owner->genericCanMethod('view', $member)) {
             return true;
         }
-
         return null;
     }
 
@@ -55,30 +57,44 @@ class GenericCanMethodExtension extends Extension
         if ($owner->genericCanMethod('edit', $member)) {
             return true;
         }
-
         if ($owner->canEditAsMember($member)) {
             return true;
         }
-
         if ($owner->canEditAsOwner($member)) {
             return true;
         }
-
         return null;
     }
 
     public function canPublish($member = null)
     {
         $owner = $this->getOwner();
-        if ($owner->canEdit($member) && $owner->genericCanMethod('publish', $member)) {
-            return true;
+        if ($owner->canEdit($member)) {
+            if ($owner->genericCanMethod('publish', $member)) {
+                return true;
+            } else {
+                return false;
+            }
         }
+        return null;
+    }
 
+    public function canUnpublish($member = null)
+    {
+        $owner = $this->getOwner();
+        if ($owner->canEdit($member)) {
+            if ($owner->genericCanMethod('unpublish', $member)) {
+                return true;
+            } else {
+                return false;
+            }
+        }
         return null;
     }
 
     /**
-     * for canDelete, we see if it returns true, but if not, we just return canEdit as a proxy.
+     * for canDelete, the member must be able to edit the record AND have the specific delete permission
+     * (same as canPublish). If not, we return null so that other extensions / the default can decide.
      *
      * @param Member $member
      * @return boolean|null
@@ -86,10 +102,9 @@ class GenericCanMethodExtension extends Extension
     public function canDelete($member = null)
     {
         $owner = $this->getOwner();
-        if ($owner->canEdit($member) && ! $owner->genericCanMethod('delete', $member)) {
+        if ($owner->canEdit($member) && $owner->genericCanMethod('delete', $member)) {
             return true;
         }
-
         return null;
     }
 
@@ -100,7 +115,7 @@ class GenericCanMethodExtension extends Extension
     public function providePermissionsHelper(): array
     {
         $owner = $this->getOwner();
-        $code = $this->getPermissionCodeForThisClass();
+        $code = $owner->getPermissionCodeForThisClass();
         $name = $owner->i18n_plural_name();
         $perms = [];
         $perms[$code . '_CAN_CREATE'] = [
@@ -129,7 +144,14 @@ class GenericCanMethodExtension extends Extension
                 // 'sort' => -100
             ];
         }
-
+        if ($owner->hasMethod('hasStages') && $owner->hasStages()) {
+            $perms[$code . '_CAN_UNPUBLISH'] = [
+                'name' => 'Unpublish ' . $name,
+                'category' => 'Publish Records',
+                // 'help' => _t(__CLASS__ . '.ACCESSALLINTERFACESHELP', 'Overrules more specific access settings.'),
+                // 'sort' => -100
+            ];
+        }
         if ($owner->hasMethod('MembersForPermissionCheck')) {
             $perms[$code . '_CAN_EDIT_AS_OWNER'] = [
                 'name' => 'Edit ' . $name . ' as owner of record',
@@ -138,7 +160,6 @@ class GenericCanMethodExtension extends Extension
                 // 'sort' => -100
             ];
         }
-
         if ($owner->hasMethod('OwnersForPermissionCheck')) {
             $perms[$code . '_CAN_EDIT_AS_MEMBER'] = [
                 'name' => 'Edit ' . $name . ' as member of record',
@@ -164,7 +185,6 @@ class GenericCanMethodExtension extends Extension
         if ($owner->canEditAsOwner($member)) {
             return true;
         }
-
         $this->getPermissionCodeForThisClass();
         return $this->canEditAsMemberOrOwner(
             'MembersForPermissionCheck',
@@ -188,7 +208,6 @@ class GenericCanMethodExtension extends Extension
         if (! $member instanceof Member) {
             $member = Security::getCurrentUser();
         }
-
         if ($member && $owner->hasMethod($methodName)) {
             $member = Security::getCurrentUser();
             if ($member) {
@@ -198,7 +217,6 @@ class GenericCanMethodExtension extends Extension
                 }
             }
         }
-
         return null;
     }
 
@@ -212,7 +230,6 @@ class GenericCanMethodExtension extends Extension
         } else {
             $className = $owner::class;
         }
-
         if (! isset($this->table_cache_for_permissions[$owner::class])) {
             $schema = $owner::getSchema();
 
@@ -225,7 +242,6 @@ class GenericCanMethodExtension extends Extension
                 )
             );
         }
-
         return $this->table_cache_for_permissions[$owner::class];
     }
 }
